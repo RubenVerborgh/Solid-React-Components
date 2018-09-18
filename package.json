@@ -9,6 +9,7 @@
     "lib"
   ],
   "dependencies": {
+    "solid-auth-client": "^2.2.3"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",

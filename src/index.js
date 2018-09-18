@@ -1,4 +1,5 @@
-const SolidReactComponents = {
-};
+import LoginButton from './components/LoginButton';
 
-export default SolidReactComponents;
+export {
+  LoginButton,
+};

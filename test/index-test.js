@@ -1,7 +1,13 @@
-import SolidReactComponents from '../src';
+import * as SolidReactComponents from '../src';
 
 describe('The SolidReactComponents module', () => {
-  it('is an object', () => {
-    expect(SolidReactComponents).toBeInstanceOf(Object);
+  const exports = [
+    'LoginButton',
+  ];
+
+  exports.forEach(name => {
+    it(`exports ${name}`, () => {
+      expect(SolidReactComponents[name]).toBeInstanceOf(Object);
+    });
   });
 });
