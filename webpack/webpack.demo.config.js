@@ -22,6 +22,9 @@ module.exports = Object.assign({
   plugins: [
     new CleanWebpackPlugin([outputDir]),
     new CopyWebpackPlugin(assets, { context: 'demo' }),
+    new CopyWebpackPlugin([
+      require.resolve('solid-auth-client/dist-popup/popup.html'),
+    ]),
     new HtmlWebpackPlugin({
       title: 'Solid React Components Demo',
       filename: 'index.html',
