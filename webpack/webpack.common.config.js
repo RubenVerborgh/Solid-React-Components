@@ -17,6 +17,7 @@ module.exports = {
   },
   externals: {
     'solid-auth-client': ['solid', 'auth'],
+    '@solid/query-ldflex': ['solid', 'data'],
   },
   devtool: 'source-map',
 };

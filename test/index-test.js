@@ -8,6 +8,7 @@ describe('The SolidReactComponents module', () => {
     'AuthButton',
     'LoginButton',
     'LogoutButton',
+    'DataField',
   ];
 
   exports.forEach(name => {
