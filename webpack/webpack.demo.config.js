@@ -14,6 +14,8 @@ const externalAssets = [
   'solid-auth-client/dist-popup/popup.html',
   'solid-auth-client/dist-lib/solid-auth-client.bundle.js',
   'solid-auth-client/dist-lib/solid-auth-client.bundle.js.map',
+  '@solid/query-ldflex/dist/solid-query-ldflex.bundle.js',
+  '@solid/query-ldflex/dist/solid-query-ldflex.bundle.js.map',
 ];
 
 module.exports = Object.assign({

@@ -9,6 +9,7 @@
     "lib"
   ],
   "dependencies": {
+    "@solid/query-ldflex": "^0.1.1",
     "solid-auth-client": "^2.2.3"
   },
   "devDependencies": {
