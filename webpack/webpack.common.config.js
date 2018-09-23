@@ -13,13 +13,10 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: ['.mjs', '.js', '.jsx', '.json'],
   },
   externals: {
-    'node-fetch': 'fetch',
-    'text-encoding': 'TextEncoder',
-    'whatwg-url': 'window',
-    '@trust/webcrypto': 'crypto',
+    'solid-auth-client': ['solid', 'auth'],
   },
   devtool: 'source-map',
 };
