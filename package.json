@@ -6,7 +6,9 @@
   "main": "lib/index.js",
   "files": [
     "src",
-    "lib"
+    "lib",
+    "dist",
+    "!dist/demo"
   ],
   "dependencies": {
     "@solid/query-ldflex": "^0.1.1",
@@ -38,8 +40,9 @@
     "webpack-dev-server": "^3.1.8"
   },
   "scripts": {
-    "build": "npm run build:lib && npm run build:demo",
+    "build": "npm run build:lib && npm run build:dist && npm run build:demo",
     "build:demo": "webpack --config=./webpack/webpack.demo.config.js",
+    "build:dist": "webpack --mode=production --config=./webpack/webpack.lib.config.js",
     "build:lib": "babel src --out-dir lib",
     "jest": "jest",
     "lint": "eslint --ext .js,.jsx src test demo webpack",

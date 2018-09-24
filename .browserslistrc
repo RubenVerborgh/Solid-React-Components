@@ -1,0 +1,8 @@
+# Build for Node
+node 8
+# Build for most browsers
+> 1%
+
+# No Proxy support
+not ie <= 11
+not operamini all
