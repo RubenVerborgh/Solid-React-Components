@@ -5,7 +5,7 @@ import auth from 'solid-auth-client';
  * Pane that shows different content
  * depending on whether the user is logged in or not.
  */
-export default class LoginButton extends React.Component {
+export default class AuthPane extends React.Component {
   constructor(props) {
     super(props);
     this.state = { loggedIn: false };
