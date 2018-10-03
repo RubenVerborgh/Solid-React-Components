@@ -1,18 +1,5 @@
-import React from 'react';
-import auth from 'solid-auth-client';
+import withWebId from './withWebId';
 
-/**
- * Pane that shows different content
- * depending on whether the user is logged in or not.
- */
-export default class AuthPane extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { loggedIn: false };
-    auth.trackSession(session => this.setState({ loggedIn: !!session }));
-  }
-
-  render() {
-    return (this.state.loggedIn ? this.props.loggedIn : this.props.loggedOut) || null;
-  }
-}
+/** Pane showing different content depending on whether the user is logged in. */
+export default withWebId(({ webId, loggedIn = null, loggedOut = null }) =>
+  webId ? loggedIn : loggedOut);

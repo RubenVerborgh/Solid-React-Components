@@ -22,7 +22,7 @@ describe('An AuthButton', () => {
   });
 
   describe('renders the log out button', () => {
-    beforeAll(() => setSession({}));
+    beforeAll(() => setSession({ webId: 'https://example.org/#me' }));
 
     it('has "Log out" as text', () => {
       expect(button.text()).toBe('Log out');

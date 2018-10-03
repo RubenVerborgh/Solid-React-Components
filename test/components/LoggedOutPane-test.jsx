@@ -22,7 +22,7 @@ describe('A LoggedOutPane', () => {
   });
 
   describe('when the user is logged in', () => {
-    beforeAll(() => setSession({}));
+    beforeAll(() => setSession({ webId: 'https://example.org/#me' }));
 
     it('does not render the content', () => {
       expect(pane.text()).toBe(null);

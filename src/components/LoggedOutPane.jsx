@@ -1,5 +1,4 @@
-import React from 'react';
-import { AuthPane } from '..';
+import withWebId from './withWebId';
 
 /** Pane that only shows its contents when the user is logged out. */
-export default ({ children }) => <AuthPane loggedOut={children}/>;
+export default withWebId(({ webId, children }) => webId ? null : children);
