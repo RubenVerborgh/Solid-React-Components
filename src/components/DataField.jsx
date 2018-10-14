@@ -1,8 +1,9 @@
 import React from 'react';
+import withWebId from './withWebId';
 import * as ldflex from '@solid/query-ldflex';
 
 /** Displays the value of a Solid LDflex expression. */
-export default class DataField extends React.Component {
+class DataField extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
@@ -12,8 +13,12 @@ export default class DataField extends React.Component {
     this.loadData();
   }
 
-  componentDidUpdate(prevProps) {
-    if (this.props.data !== prevProps.data)
+  componentDidUpdate({ data, webId }) {
+    // Reload when the data property changes
+    // or, if it is a string expression, when the user changes
+    // (which might influence the expression's evaluation).
+    if (this.props.data !== data ||
+        (typeof data === 'string' && this.props.webId !== webId))
       this.loadData();
   }
 
@@ -64,3 +69,5 @@ export default class DataField extends React.Component {
     return `${value}`;
   }
 }
+
+export default withWebId(props => new DataField(props));
