@@ -1,4 +1,5 @@
 import withWebId from './components/withWebId';
+import resolveExpressions from './components/resolveExpressions';
 
 import AuthPane from './components/AuthPane';
 import LoggedInPane from './components/LoggedInPane';
@@ -12,6 +13,7 @@ import DataField from './components/DataField';
 
 export {
   withWebId,
+  resolveExpressions,
 
   AuthPane,
   LoggedInPane,
