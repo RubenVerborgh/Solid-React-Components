@@ -6,7 +6,7 @@ import * as ldflex from '@solid/query-ldflex';
 class DataField extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = { pending: true };
   }
 
   componentDidMount() {
@@ -19,12 +19,13 @@ class DataField extends React.Component {
     // (which might influence the expression's evaluation).
     if (this.props.data !== data ||
         (typeof data === 'string' && this.props.webId !== webId))
-      this.loadData();
+      // Wait for a change of user to propagate to the expression engine
+      setImmediate(() => this.loadData());
   }
 
   /** Resolves the promise to data into the state. */
   async loadData() {
-    let data = this.props.data;
+    let data = this.props.data, value = null, error = null;
     try {
       // If the data is a string expression, evaluate it
       if (typeof data === 'string')
@@ -34,13 +35,14 @@ class DataField extends React.Component {
       if (!data || typeof data.then !== 'function')
         throw new Error(`Expected data to be a path or a string but got ${data}`);
 
-      // Await the data and store it into the state
-      const value = await data;
-      this.setState({ value });
+      // Await the data
+      this.setState({ pending: true });
+      value = await data;
     }
-    catch ({ message: error }) {
-      this.setState({ error });
+    catch ({ message }) {
+      error = message;
     }
+    this.setState({ value, error, pending: false });
   }
 
   /** Evaluates the given string expression against Solid LDflex. */
@@ -58,12 +60,15 @@ class DataField extends React.Component {
   }
 
   render() {
-    const { value, error } = this.state;
+    const { pending, error, value } = this.state;
+    // Render pending state
+    if (pending)
+      return <span className="solid data pending"/>;
     // Render error state
-    if (error !== undefined)
+    if (error)
       return <span className="solid data error" error={error}/>;
-    // Render pending or empty state
-    if (value === undefined)
+    // Render empty value
+    if (value === undefined || value === null)
       return <span className="solid data empty"/>;
     // Render stringified value
     return `${value}`;

@@ -4,3 +4,19 @@ body {
   max-width: 800px;
   margin: 0 auto;
 }
+
+.solid.data.pending:before {
+  content: "…";
+  color: #999;
+}
+
+.solid.data.empty:before {
+  content: "(none)";
+  color: #999;
+}
+
+.solid.data.error:before {
+  content: '[' attr(error) ']';
+  font-style: italic;
+  color: red;
+}

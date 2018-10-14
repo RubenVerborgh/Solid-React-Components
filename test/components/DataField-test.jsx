@@ -64,8 +64,8 @@ describe('A DataField', () => {
         expect(span().hasClass('data')).toBe(true);
       });
 
-      it('has the empty class', () => {
-        expect(span().hasClass('empty')).toBe(true);
+      it('has the pending class', () => {
+        expect(span().hasClass('pending')).toBe(true);
       });
 
       it('starts resolving the expression', () => {
@@ -83,6 +83,32 @@ describe('A DataField', () => {
 
       it('contains the resolved contents', () => {
         expect(field.text()).toBe('contents');
+      });
+    });
+
+    describe('after the expression resolves to undefined', () => {
+      beforeEach(done => {
+        const resolve = expression.then.mock.calls[0][0];
+        resolve(undefined);
+        setImmediate(() => field.update());
+        setImmediate(done);
+      });
+
+      it('is an empty span', () => {
+        expect(span().name()).toBe('span');
+        expect(span().text()).toBe('');
+      });
+
+      it('has the solid class', () => {
+        expect(span().hasClass('solid')).toBe(true);
+      });
+
+      it('has the data class', () => {
+        expect(span().hasClass('data')).toBe(true);
+      });
+
+      it('has the empty class', () => {
+        expect(span().hasClass('empty')).toBe(true);
       });
     });
 
@@ -120,7 +146,8 @@ describe('A DataField', () => {
       let newExpression;
       beforeEach(done => {
         newExpression = { then: jest.fn() };
-        field.setProps({ data: newExpression }, done);
+        field.setProps({ data: newExpression });
+        setImmediate(done);
       });
 
       describe('before the expression resolves', () => {
@@ -178,8 +205,8 @@ describe('A DataField', () => {
         expect(span().hasClass('data')).toBe(true);
       });
 
-      it('has the empty class', () => {
-        expect(span().hasClass('empty')).toBe(true);
+      it('has the pending class', () => {
+        expect(span().hasClass('pending')).toBe(true);
       });
 
       it('starts resolving the expression', () => {
@@ -197,6 +224,32 @@ describe('A DataField', () => {
 
       it('resolves to the evaluated expression', () => {
         expect(field.text()).toBe('First');
+      });
+    });
+
+    describe('after the expression resolves to undefined', () => {
+      beforeEach(done => {
+        const resolve = ldflex.user.firstName.then.mock.calls[0][0];
+        resolve(undefined);
+        setImmediate(() => field.update());
+        setImmediate(done);
+      });
+
+      it('is an empty span', () => {
+        expect(span().name()).toBe('span');
+        expect(span().text()).toBe('');
+      });
+
+      it('has the solid class', () => {
+        expect(span().hasClass('solid')).toBe(true);
+      });
+
+      it('has the data class', () => {
+        expect(span().hasClass('data')).toBe(true);
+      });
+
+      it('has the empty class', () => {
+        expect(span().hasClass('empty')).toBe(true);
       });
     });
 
@@ -231,8 +284,9 @@ describe('A DataField', () => {
     });
 
     describe('after the user changes', () => {
-      beforeEach(() => {
+      beforeEach(done => {
         setSession({ webId: 'https://example.org/#me' });
+        setImmediate(done);
       });
 
       it('is an empty span', () => {
@@ -248,8 +302,8 @@ describe('A DataField', () => {
         expect(span().hasClass('data')).toBe(true);
       });
 
-      it('has the empty class', () => {
-        expect(span().hasClass('empty')).toBe(true);
+      it('has the pending class', () => {
+        expect(span().hasClass('pending')).toBe(true);
       });
 
       it('re-evaluates the expression', () => {
