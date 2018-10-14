@@ -167,54 +167,53 @@ describe('A resolveExpressions wrapper', () => {
     it('sets pending to false', () => {
       expect(wrapped().props()).toHaveProperty('pending', false);
     });
-  });
 
-  describe('after the user changes', () => {
-    beforeEach(done => {
-      setSession({ webId: 'https://example.org/#me' });
-      setImmediate(done);
-    });
-
-    it('passes the first property as undefined', () => {
-      expect(wrapped().props()).toHaveProperty('foo', undefined);
-    });
-
-    it('passes the second property as undefined', () => {
-      expect(wrapped().props()).toHaveProperty('bar', undefined);
-    });
-
-    it('sets pending to true', () => {
-      expect(wrapped().props()).toHaveProperty('pending', true);
-    });
-
-    it('re-evaluates the first expression', () => {
-      expect(expression.then).toBeCalledTimes(2);
-    });
-
-    it('re-evaluates the second expression', () => {
-      expect(ldflex.user.bar.then).toBeCalledTimes(2);
-    });
-
-    describe('after both properties resolve', () => {
+    describe('after the user changes', () => {
       beforeEach(done => {
-        const resolve1 = expression.then.mock.calls[1][0];
-        const resolve2 = ldflex.user.bar.then.mock.calls[1][0];
-        resolve1('first change');
-        resolve2('second change');
+        setSession({ webId: 'https://example.org/#me' });
         setImmediate(() => wrapper.update());
         setImmediate(done);
       });
 
       it('passes the first property value', () => {
-        expect(wrapped().props()).toHaveProperty('foo', 'first change');
+        expect(wrapped().props()).toHaveProperty('foo', 'first');
       });
 
-      it('passes the second property value', () => {
-        expect(wrapped().props()).toHaveProperty('bar', 'second change');
+      it('passes the second property as undefined', () => {
+        expect(wrapped().props()).toHaveProperty('bar', undefined);
       });
 
-      it('sets pending to false', () => {
-        expect(wrapped().props()).toHaveProperty('pending', false);
+      it('sets pending to true', () => {
+        expect(wrapped().props()).toHaveProperty('pending', true);
+      });
+
+      it('does not re-evaluate the first expression (because it is a promise)', () => {
+        expect(expression.then).toBeCalledTimes(1);
+      });
+
+      it('re-evaluates the second expression (because it is a string expression)', () => {
+        expect(ldflex.user.bar.then).toBeCalledTimes(2);
+      });
+
+      describe('after both properties resolve', () => {
+        beforeEach(done => {
+          const resolve = ldflex.user.bar.then.mock.calls[1][0];
+          resolve('second change');
+          setImmediate(() => wrapper.update());
+          setImmediate(done);
+        });
+
+        it('passes the first property value', () => {
+          expect(wrapped().props()).toHaveProperty('foo', 'first');
+        });
+
+        it('passes the second property value', () => {
+          expect(wrapped().props()).toHaveProperty('bar', 'second change');
+        });
+
+        it('sets pending to false', () => {
+          expect(wrapped().props()).toHaveProperty('pending', false);
+        });
       });
     });
   });

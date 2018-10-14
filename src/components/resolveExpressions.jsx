@@ -15,27 +15,32 @@ export default function resolveExpressions(propsToResolve, WrappedComponent) {
     }
 
     componentDidMount() {
-      this.resolveExpressions();
+      this.resolveExpressions(this.propsToResolve);
     }
 
     componentDidUpdate(prevProps) {
-      // Reload when any resolving property has changed
+      // Reload any resolving property that has changed
       // or, if it is a string expression, when the user has changed
       // (which might influence the expression's evaluation).
       const userChanged = this.props.webId !== prevProps.webId;
-      const changed = this.propsToResolve.some(p =>
+      const changedProps = this.propsToResolve.filter(p =>
         this.props[p] !== prevProps[p] ||
           (userChanged && typeof this.props[p] === 'string')
       );
       // Wait for a change of user to propagate to the expression engine
-      if (changed)
-        setImmediate(() => this.resolveExpressions());
+      if (changedProps.length > 0)
+        setImmediate(() => this.resolveExpressions(changedProps));
     }
 
-    /** Resolves all property expressions into the state. */
-    async resolveExpressions() {
-      this.setState(() => ({ pending: true }));
-      const resolvers = this.propsToResolve.map(p => this.resolveExpression(p));
+    /** Resolves the property expressions into the state. */
+    async resolveExpressions(names) {
+      // Mark the properties as pending
+      const pendingState = { pending: true };
+      names.forEach(n => (pendingState[n] = undefined));
+      this.setState(pendingState);
+
+      // Create resolvers for each property and wait until they are done
+      const resolvers = names.map(p => this.resolveExpression(p));
       try {
         await Promise.all(resolvers);
       }
