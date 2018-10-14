@@ -15,39 +15,50 @@ export default function resolveExpressions(propsToResolve, WrappedComponent) {
     }
 
     componentDidMount() {
-      this.loadData();
+      this.resolveExpressions();
     }
 
-    componentDidUpdate({ data, webId }) {
-      // Reload when the data property changes
-      // or, if it is a string expression, when the user changes
+    componentDidUpdate(prevProps) {
+      // Reload when any resolving property has changed
+      // or, if it is a string expression, when the user has changed
       // (which might influence the expression's evaluation).
-      if (this.props.data !== data ||
-          (typeof data === 'string' && this.props.webId !== webId))
-        // Wait for a change of user to propagate to the expression engine
-        setImmediate(() => this.loadData());
+      const userChanged = this.props.webId !== prevProps.webId;
+      const changed = this.propsToResolve.some(p =>
+        this.props[p] !== prevProps[p] ||
+          (userChanged && typeof this.props[p] === 'string')
+      );
+      // Wait for a change of user to propagate to the expression engine
+      if (changed)
+        setImmediate(() => this.resolveExpressions());
     }
 
-    /** Resolves the promise to data into the state. */
-    async loadData() {
-      let data = this.props.data, value = null, error = null;
+    /** Resolves all property expressions into the state. */
+    async resolveExpressions() {
+      this.setState(() => ({ pending: true }));
+      const resolvers = this.propsToResolve.map(p => this.resolveExpression(p));
       try {
-        // If the data is a string expression, evaluate it
-        if (typeof data === 'string')
-          data = this.evaluateExpression(data);
-
-        // Ensure that data is a thenable
-        if (!data || typeof data.then !== 'function')
-          throw new Error(`Expected data to be a path or a string but got ${data}`);
-
-        // Await the data
-        this.setState({ pending: true });
-        value = await data;
+        await Promise.all(resolvers);
       }
-      catch ({ message }) {
-        error = message;
+      catch (error) {
+        this.setState({ error });
       }
-      this.setState({ value, error, pending: false });
+      this.setState({ pending: false });
+    }
+
+    /** Resolves the property expression into the state. */
+    async resolveExpression(name) {
+      // If the property is a string expression, evaluate it
+      const expression = this.props[name];
+      const value = typeof expression === 'string' ?
+        this.evaluateExpression(expression) : expression;
+
+      // Ensure that the value is a thenable
+      if (!value || typeof value.then !== 'function')
+        throw new Error(`Expected ${name} to be a path or a string but got ${expression}`);
+
+      // Await the value and add it to the state
+      const resolved = await value;
+      this.setState({ [name]: resolved });
     }
 
     /** Evaluates the given string expression against Solid LDflex. */
@@ -65,9 +76,15 @@ export default function resolveExpressions(propsToResolve, WrappedComponent) {
     }
 
     render() {
-      const { pending, error, value } = this.state;
-      return <WrappedComponent pending={pending} error={error} value={value}
-        {...this.props} />;
+      // Copy relevant state and existing properties
+      const { pending, error } = this.state;
+      const props = Object.assign({ pending, error }, this.props);
+
+      // Copy resolved properties
+      for (const name of this.propsToResolve)
+        props[name] = this.state[name];
+
+      return <WrappedComponent {...props} />;
     }
   }
   return withWebId(ResolveExpressions);

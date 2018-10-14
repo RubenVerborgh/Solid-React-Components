@@ -10,8 +10,10 @@ jest.setMock('@solid/query-ldflex', {});
 describe('A DataField', () => {
   describe('without expression', () => {
     let field;
-    beforeEach(() => {
+    beforeAll(done => {
       field = mount(<DataField/>);
+      setImmediate(() => field.update());
+      setImmediate(done);
     });
     const span = () => field.find('span').first();
 
@@ -40,13 +42,12 @@ describe('A DataField', () => {
 
   describe('with data set to a thenable', () => {
     let field, expression, setSession;
-    beforeEach(() => {
+    beforeEach(done => {
       expression = { then: jest.fn() };
       field = mount(<DataField data={expression}/>);
-      auth.trackSession.mockImplementationOnce(cb => {
-        setSession = cb;
-        setSession(null);
-      });
+      auth.trackSession.mockImplementationOnce(cb => (setSession = cb));
+      setImmediate(() => field.update());
+      setImmediate(done);
     });
     const span = () => field.find('span').first();
 
@@ -74,11 +75,9 @@ describe('A DataField', () => {
     });
 
     describe('after the expression resolves', () => {
-      beforeEach(done => {
+      beforeEach(() => {
         const resolve = expression.then.mock.calls[0][0];
         resolve({ toString: () => 'contents' });
-        setImmediate(() => field.update());
-        setImmediate(done);
       });
 
       it('contains the resolved contents', () => {
@@ -184,10 +183,7 @@ describe('A DataField', () => {
     beforeEach(() => {
       ldflex.user = { firstName: { then: jest.fn() } };
       field = mount(<DataField data="user.firstName"/>);
-      auth.trackSession.mockImplementationOnce(cb => {
-        setSession = cb;
-        setSession(null);
-      });
+      auth.trackSession.mockImplementationOnce(cb => (setSession = cb));
     });
     const span = () => field.find('span').first();
 
@@ -327,8 +323,10 @@ describe('A DataField', () => {
 
   describe('with data set to an invalid expression string', () => {
     let field;
-    beforeEach(() => {
+    beforeEach(done => {
       field = mount(<DataField data=".invalid"/>);
+      setImmediate(() => field.update());
+      setImmediate(done);
     });
     const span = () => field.find('span').first();
 
@@ -357,8 +355,10 @@ describe('A DataField', () => {
 
   describe('with data set to a non-thenable', () => {
     let field;
-    beforeEach(() => {
+    beforeEach(done => {
       field = mount(<DataField data={{}}/>);
+      setImmediate(() => field.update());
+      setImmediate(done);
     });
     const span = () => field.find('span').first();
 

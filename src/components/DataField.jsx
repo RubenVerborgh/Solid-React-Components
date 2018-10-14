@@ -2,16 +2,16 @@ import React from 'react';
 import resolveExpressions from './resolveExpressions';
 
 /** Displays the value of a Solid LDflex expression. */
-export default resolveExpressions(['data'], ({ pending, error, value }) => {
+export default resolveExpressions(['data'], ({ pending, error, data }) => {
   // Render pending state
   if (pending)
     return <span className="solid data pending"/>;
   // Render error state
   if (error)
-    return <span className="solid data error" error={error}/>;
+    return <span className="solid data error" error={error.message}/>;
   // Render empty value
-  if (value === undefined || value === null)
+  if (data === undefined || data === null)
     return <span className="solid data empty"/>;
   // Render stringified value
-  return `${value}`;
+  return `${data}`;
 });
