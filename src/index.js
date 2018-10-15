@@ -10,6 +10,7 @@ import LoginButton from './components/LoginButton';
 import LogoutButton from './components/LogoutButton';
 
 import DataField from './components/DataField';
+import Image from './components/Image';
 
 export {
   withWebId,
@@ -24,4 +25,5 @@ export {
   LogoutButton,
 
   DataField,
+  Image,
 };
