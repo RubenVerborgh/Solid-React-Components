@@ -8,24 +8,41 @@ jest.mock('solid-auth-client');
 describe('A LoggedOutPane', () => {
   let pane, setSession;
 
-  beforeAll(() => {
-    auth.trackSession.mockImplementationOnce(cb => (setSession = cb));
-    pane = mount(<LoggedOutPane>Logged out</LoggedOutPane>);
-  });
+  describe('with children', () => {
+    beforeAll(() => {
+      auth.trackSession.mockImplementationOnce(cb => (setSession = cb));
+      pane = mount(<LoggedOutPane>Logged out</LoggedOutPane>);
+    });
 
-  describe('when the user is not logged in', () => {
-    beforeAll(() => setSession(null));
+    describe('when the user is not logged in', () => {
+      beforeAll(() => setSession(null));
 
-    it('renders the content', () => {
-      expect(pane.text()).toBe('Logged out');
+      it('renders the content', () => {
+        expect(pane.text()).toBe('Logged out');
+      });
+    });
+
+    describe('when the user is logged in', () => {
+      beforeAll(() => setSession({ webId: 'https://example.org/#me' }));
+
+      it('is empty', () => {
+        expect(pane.text()).toBe(null);
+      });
     });
   });
 
-  describe('when the user is logged in', () => {
-    beforeAll(() => setSession({ webId: 'https://example.org/#me' }));
+  describe('without children', () => {
+    beforeAll(() => {
+      auth.trackSession.mockImplementationOnce(cb => (setSession = cb));
+      pane = mount(<LoggedOutPane/>);
+    });
 
-    it('does not render the content', () => {
-      expect(pane.text()).toBe(null);
+    describe('when the user is not logged in', () => {
+      beforeAll(() => setSession(null));
+
+      it('is empty', () => {
+        expect(pane.text()).toBe(null);
+      });
     });
   });
 });
