@@ -9,6 +9,7 @@ const outputDir = './dist/demo/';
 
 const localAssets = [
   'index.css',
+  'profile.svg',
 ];
 const externalAssets = [
   'solid-auth-client/dist-popup/popup.html',
@@ -37,10 +38,8 @@ module.exports = Object.assign({
     new HtmlWebpackIncludeAssetsPlugin({
       assets: [
         ...localAssets,
-        ...externalAssets
-          .filter(a => /\.js$/.test(a))
-          .map(a => a.replace(/.*\//, '')),
-      ],
+        ...externalAssets.map(f => f.replace(/.*\//, '')),
+      ].filter(f => /\.(js|css)$/.test(f)),
       append: false,
     }),
   ],

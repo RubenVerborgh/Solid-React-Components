@@ -1,7 +1,7 @@
 body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11pt;
-  max-width: 800px;
+  max-width: 600px;
   margin: 0 auto;
 }
 
@@ -19,4 +19,10 @@ body {
   content: '[' attr(error) ']';
   font-style: italic;
   color: red;
+}
+
+img.profile {
+  float: right;
+  max-width: 120px;
+  max-height: 120px;
 }
