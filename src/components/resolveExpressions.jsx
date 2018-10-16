@@ -1,6 +1,6 @@
 import React from 'react';
 import withWebId from './withWebId';
-import * as ldflex from '@solid/query-ldflex';
+import { resolveLDflex } from '../util';
 
 /**
  * Higher-order component that evaluates LDflex expressions in properties
@@ -53,31 +53,16 @@ export default function resolveExpressions(propsToResolve, WrappedComponent) {
     /** Resolves the property expression into the state. */
     async resolveExpression(name) {
       // If the property is a string expression, evaluate it
-      const expression = this.props[name];
-      const value = typeof expression === 'string' ?
-        this.evaluateExpression(expression) : expression;
+      const expr = this.props[name];
+      const value = typeof expr === 'string' ? resolveLDflex(expr) : expr;
 
       // Ensure that the value is a thenable
       if (!value || typeof value.then !== 'function')
-        throw new Error(`Expected ${name} to be a path or a string but got ${expression}`);
+        throw new Error(`Expected ${name} to be a path or a string but got ${expr}`);
 
       // Await the value and add it to the state
       const resolved = await value;
       this.setState({ [name]: resolved });
-    }
-
-    /** Evaluates the given string expression against Solid LDflex. */
-    evaluateExpression(expression) {
-      const body = `"use strict";return solid.data.${expression}`;
-      let evaluator;
-      try {
-        /* eslint no-new-func: off */
-        evaluator = Function('solid', body);
-      }
-      catch ({ message }) {
-        throw new Error(`Expression "${expression}" is invalid: ${message}`);
-      }
-      return evaluator({ data: ldflex });
     }
 
     render() {
