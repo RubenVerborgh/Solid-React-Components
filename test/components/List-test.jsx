@@ -13,7 +13,7 @@ describe('A List', () => {
     let list;
     beforeAll(() => {
       resolveLDflex.mockReturnValue(iterable);
-      list = mount(<List items="expr.items"/>);
+      list = mount(<List src="expr.items"/>);
     });
     afterAll(() => list.unmount());
 
@@ -41,7 +41,7 @@ describe('A List', () => {
     let list;
     beforeAll(() => {
       resolveLDflex.mockReturnValue(iterable);
-      list = mount(<List items="expr.items"/>);
+      list = mount(<List src="expr.items"/>);
     });
     afterAll(() => list.unmount());
 

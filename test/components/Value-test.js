@@ -24,15 +24,15 @@ describe('A Value', () => {
 
     it('has the error message in the data-error attribute', () => {
       expect(span().prop('data-error'))
-        .toBe('data should be an LDflex path or string but is undefined');
+        .toBe('src should be an LDflex path or string but is undefined');
     });
 
     it('has the solid class', () => {
       expect(span().hasClass('solid')).toBe(true);
     });
 
-    it('has the data class', () => {
-      expect(span().hasClass('data')).toBe(true);
+    it('has the value class', () => {
+      expect(span().hasClass('value')).toBe(true);
     });
 
     it('has the error class', () => {
@@ -45,7 +45,7 @@ describe('A Value', () => {
     beforeEach(() => {
       expression = mockPromise();
       resolveLDflex.mockReturnValue(expression);
-      field = mount(<Value data="user.firstname"/>);
+      field = mount(<Value src="user.firstname"/>);
     });
     afterEach(() => field.unmount());
     const span = () => field.find('span').first();
@@ -60,8 +60,8 @@ describe('A Value', () => {
         expect(span().hasClass('solid')).toBe(true);
       });
 
-      it('has the data class', () => {
-        expect(span().hasClass('data')).toBe(true);
+      it('has the value class', () => {
+        expect(span().hasClass('value')).toBe(true);
       });
 
       it('has the pending class', () => {
@@ -99,8 +99,8 @@ describe('A Value', () => {
         expect(span().hasClass('solid')).toBe(true);
       });
 
-      it('has the data class', () => {
-        expect(span().hasClass('data')).toBe(true);
+      it('has the value class', () => {
+        expect(span().hasClass('value')).toBe(true);
       });
 
       it('has the empty class', () => {
@@ -127,8 +127,8 @@ describe('A Value', () => {
         expect(span().hasClass('solid')).toBe(true);
       });
 
-      it('has the data class', () => {
-        expect(span().hasClass('data')).toBe(true);
+      it('has the value class', () => {
+        expect(span().hasClass('value')).toBe(true);
       });
 
       it('has the error class', () => {
@@ -136,12 +136,12 @@ describe('A Value', () => {
       });
     });
 
-    describe('after the data changes', () => {
+    describe('after src changes', () => {
       let newExpression;
       beforeEach(async () => {
         newExpression = mockPromise();
         resolveLDflex.mockReturnValue(newExpression);
-        await setProps(field, { data: 'user.other' });
+        await setProps(field, { src: 'user.other' });
       });
 
       describe('before the expression is evaluated', () => {
@@ -175,7 +175,7 @@ describe('A Value', () => {
     let field, expression;
     beforeEach(() => {
       expression = mockPromise();
-      field = mount(<Value data={expression}/>);
+      field = mount(<Value src={expression}/>);
     });
     afterEach(() => field.unmount());
 

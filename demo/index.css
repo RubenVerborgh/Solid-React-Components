@@ -5,17 +5,17 @@ body {
   margin: 0 auto;
 }
 
-.solid.data.pending:before {
+.solid.value.pending:before {
   content: "…";
   color: #999;
 }
 
-.solid.data.empty:before {
+.solid.value.empty:before {
   content: "(none)";
   color: #999;
 }
 
-.solid.data.error:before {
+.solid.value.error:before {
   content: '[' attr(data-error) ']';
   font-style: italic;
   color: red;

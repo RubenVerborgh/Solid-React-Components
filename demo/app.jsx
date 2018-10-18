@@ -7,9 +7,9 @@ export default () =>
     <AuthButton popup="popup.html"/>
     <LoggedInPane>
       <Image src="user.image" defaultSrc="profile.svg" className="profile"/>
-      <p>Welcome back, <Value data="user.name"/>.</p>
+      <p>Welcome back, <Value src="user.name"/>.</p>
       <h2>Friends</h2>
-      <List items="user.friends.firstName"/>
+      <List src="user.friends.firstName"/>
     </LoggedInPane>
     <LoggedOutPane>
       <p>You are logged out.</p>
