@@ -1,5 +1,5 @@
 import React from 'react';
-import { DataField } from '../../src/';
+import { Value } from '../../src/';
 import { mount } from 'enzyme';
 import { resolveLDflex } from '../../src/util';
 import { mockPromise, update, setProps } from '../util';
@@ -7,11 +7,11 @@ import auth from 'solid-auth-client';
 
 jest.mock('../../src/util');
 
-describe('A DataField', () => {
+describe('A Value', () => {
   describe('without expression', () => {
     let field;
     beforeEach(async () => {
-      field = mount(<DataField/>);
+      field = mount(<Value/>);
       await update(field);
     });
     afterEach(() => field.unmount());
@@ -45,7 +45,7 @@ describe('A DataField', () => {
     beforeEach(() => {
       expression = mockPromise();
       resolveLDflex.mockReturnValue(expression);
-      field = mount(<DataField data="user.firstname"/>);
+      field = mount(<Value data="user.firstname"/>);
     });
     afterEach(() => field.unmount());
     const span = () => field.find('span').first();
@@ -175,7 +175,7 @@ describe('A DataField', () => {
     let field, expression;
     beforeEach(() => {
       expression = mockPromise();
-      field = mount(<DataField data={expression}/>);
+      field = mount(<Value data={expression}/>);
     });
     afterEach(() => field.unmount());
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AuthButton, LoggedInPane, LoggedOutPane, DataField, Image, List } from '../src/';
+import { AuthButton, LoggedInPane, LoggedOutPane, Value, Image, List } from '../src/';
 
 export default () =>
   <div>
@@ -7,7 +7,7 @@ export default () =>
     <AuthButton popup="popup.html"/>
     <LoggedInPane>
       <Image src="user.image" defaultSrc="profile.svg" className="profile"/>
-      <p>Welcome back, <DataField data="user.name"/>.</p>
+      <p>Welcome back, <Value data="user.name"/>.</p>
       <h2>Friends</h2>
       <List items="user.friends.firstName"/>
     </LoggedInPane>

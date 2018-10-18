@@ -10,7 +10,7 @@ import AuthButton from './components/AuthButton';
 import LoginButton from './components/LoginButton';
 import LogoutButton from './components/LogoutButton';
 
-import DataField from './components/DataField';
+import Value from './components/Value';
 import Image from './components/Image';
 
 import List from './components/List';
@@ -28,7 +28,7 @@ export {
   LoginButton,
   LogoutButton,
 
-  DataField,
+  Value,
   Image,
 
   List,

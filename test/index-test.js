@@ -10,7 +10,7 @@ describe('The SolidReactComponents module', () => {
     'AuthButton',
     'LoginButton',
     'LogoutButton',
-    'DataField',
+    'Value',
     'Image',
   ];
 
