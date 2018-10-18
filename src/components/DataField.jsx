@@ -1,8 +1,8 @@
 import React from 'react';
-import resolveExpressions from './resolveExpressions';
+import evaluateExpressions from './evaluateExpressions';
 
 /** Displays the value of a Solid LDflex expression. */
-export default resolveExpressions(['data'], ({ pending, error, data }) => {
+export default evaluateExpressions(['data'], ({ pending, error, data }) => {
   // Render pending state
   if (pending)
     return <span className="solid data pending"/>;

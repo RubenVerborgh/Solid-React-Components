@@ -3,17 +3,13 @@ import { withWebId } from '../../src/';
 import { mount } from 'enzyme';
 import auth from 'solid-auth-client';
 
-jest.mock('solid-auth-client');
-
 describe('A withWebId wrapper', () => {
   const Wrapper = withWebId(() => <span>contents</span>);
-  let wrapper, setSession;
+  let wrapper;
 
-  beforeAll(() => {
-    auth.trackSession.mockImplementationOnce(cb => (setSession = cb));
-    wrapper = mount(<Wrapper foo="bar"/>);
-  });
+  beforeAll(() => (wrapper = mount(<Wrapper foo="bar"/>)));
   beforeEach(() => wrapper.update());
+  afterAll(() => wrapper.unmount());
 
   describe('before a session is received', () => {
     it('renders the wrapped component', () => {
@@ -30,7 +26,7 @@ describe('A withWebId wrapper', () => {
   });
 
   describe('when the user is not logged in', () => {
-    beforeAll(() => setSession(null));
+    beforeAll(() => auth.mockWebId(null));
 
     it('renders the wrapped component', () => {
       expect(wrapper.html()).toBe('<span>contents</span>');
@@ -46,7 +42,7 @@ describe('A withWebId wrapper', () => {
   });
 
   describe('when the user is logged in', () => {
-    beforeAll(() => setSession({ webId: 'https://example.org/#me' }));
+    beforeAll(() => auth.mockWebId('https://example.org/#me'));
 
     it('renders the wrapped component', () => {
       expect(wrapper.html()).toBe('<span>contents</span>');

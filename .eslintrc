@@ -56,7 +56,7 @@
     no-new-wrappers: error,
     no-octal: error,
     no-octal-escape: error,
-    no-param-reassign: error,
+    no-param-reassign: off,
     no-proto: error,
     no-redeclare: error,
     no-restricted-properties: error,
@@ -79,7 +79,7 @@
     no-with: error,
     prefer-promise-reject-errors: error,
     radix: error,
-    require-await: error,
+    require-await: off,
     vars-on-top: off,
     wrap-iife: error,
 

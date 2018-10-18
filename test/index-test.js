@@ -3,7 +3,7 @@ import * as SolidReactComponents from '../src';
 describe('The SolidReactComponents module', () => {
   const exports = [
     'withWebId',
-    'resolveExpressions',
+    'evaluateExpressions',
     'AuthPane',
     'LoggedInPane',
     'LoggedOutPane',

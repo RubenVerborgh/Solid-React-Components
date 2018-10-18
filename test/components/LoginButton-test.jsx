@@ -3,8 +3,6 @@ import { LoginButton } from '../../src/';
 import { shallow } from 'enzyme';
 import auth from 'solid-auth-client';
 
-jest.mock('solid-auth-client');
-
 describe('A LoginButton', () => {
   const button = shallow(<LoginButton popup="popup.html"/>);
 

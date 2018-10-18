@@ -1,8 +1,6 @@
 import { resolveLDflex, domProps } from '../src/util';
 import * as data from '@solid/query-ldflex';
 
-jest.setMock('@solid/query-ldflex', {});
-
 describe('util', () => {
   describe('resolveLDflex', () => {
     it('evaluates expressions on the @solid/query-ldflex root path', () => {

@@ -3,21 +3,19 @@ import { AuthPane } from '../../src/';
 import { mount } from 'enzyme';
 import auth from 'solid-auth-client';
 
-jest.mock('solid-auth-client');
-
 describe('An AuthPane with child panes', () => {
-  let pane, setSession;
+  let pane;
 
   beforeAll(() => {
-    auth.trackSession.mockImplementationOnce(cb => (setSession = cb));
     pane = mount(<AuthPane
       loggedOut={<span>Logged out</span>}
       loggedIn={<span>Logged in</span>}
     />);
   });
+  afterAll(() => pane.unmount());
 
   describe('when the user is not logged in', () => {
-    beforeAll(() => setSession(null));
+    beforeAll(() => auth.mockWebId(null));
 
     it('renders the loggedOut content', () => {
       expect(pane.html()).toBe('<span>Logged out</span>');
@@ -25,7 +23,7 @@ describe('An AuthPane with child panes', () => {
   });
 
   describe('when the user is logged in', () => {
-    beforeAll(() => setSession({ webId: 'https://example.org/#me' }));
+    beforeAll(() => auth.mockWebId('https://example.org/#me'));
 
     it('renders the loggedIn content', () => {
       expect(pane.html()).toBe('<span>Logged in</span>');
@@ -34,15 +32,12 @@ describe('An AuthPane with child panes', () => {
 });
 
 describe('An AuthPane without child panes', () => {
-  let pane, setSession;
-
-  beforeAll(() => {
-    auth.trackSession.mockImplementationOnce(cb => (setSession = cb));
-    pane = mount(<AuthPane/>);
-  });
+  let pane;
+  beforeAll(() => (pane = mount(<AuthPane/>)));
+  afterAll(() => pane.unmount());
 
   describe('when the user is not logged in', () => {
-    beforeAll(() => setSession(null));
+    beforeAll(() => auth.mockWebId(null));
 
     it('renders no content', () => {
       expect(pane.html()).toBe(null);
@@ -50,7 +45,7 @@ describe('An AuthPane without child panes', () => {
   });
 
   describe('when the user is logged in', () => {
-    beforeAll(() => setSession({ webId: 'https://example.org/#me' }));
+    beforeAll(() => auth.mockWebId('https://example.org/#me'));
 
     it('renders no content', () => {
       expect(pane.html()).toBe(null);

@@ -1,5 +1,6 @@
 import withWebId from './components/withWebId';
-import resolveExpressions from './components/resolveExpressions';
+import evaluateExpressions from './components/evaluateExpressions';
+import evaluateList from './components/evaluateList';
 
 import AuthPane from './components/AuthPane';
 import LoggedInPane from './components/LoggedInPane';
@@ -12,9 +13,12 @@ import LogoutButton from './components/LogoutButton';
 import DataField from './components/DataField';
 import Image from './components/Image';
 
+import List from './components/List';
+
 export {
   withWebId,
-  resolveExpressions,
+  evaluateExpressions,
+  evaluateList,
 
   AuthPane,
   LoggedInPane,
@@ -26,4 +30,6 @@ export {
 
   DataField,
   Image,
+
+  List,
 };

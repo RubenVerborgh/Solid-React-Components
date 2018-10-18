@@ -1,17 +1,24 @@
 import React from 'react';
 import { Image } from '../../src/';
 import { mount } from 'enzyme';
-import * as ldflex from '@solid/query-ldflex';
+import { resolveLDflex } from '../../src/util';
+import { mockPromise } from '../util';
 
-jest.setMock('@solid/query-ldflex', {});
+jest.mock('../../src/util', () => {
+  const util = require.requireActual('../../src/util');
+  util.resolveLDflex = jest.fn();
+  return util;
+});
 
 describe('An Image', () => {
   describe('with a src property', () => {
-    let image;
+    let image, src;
     beforeEach(() => {
-      ldflex.user = { image: { then: jest.fn() } };
+      src = mockPromise();
+      resolveLDflex.mockReturnValue(src);
       image = mount(<Image src="user.image" className="pic" width="100"/>);
     });
+    afterEach(() => image.unmount());
     const img = () => image.find('img').first();
 
     describe('before the expression resolves', () => {
@@ -21,11 +28,9 @@ describe('An Image', () => {
     });
 
     describe('after src resolves to a URL', () => {
-      beforeEach(done => {
-        const resolve = ldflex.user.image.then.mock.calls[0][0];
-        resolve('https://example.com/image.jpg');
-        setImmediate(() => image.update());
-        setImmediate(done);
+      beforeEach(async () => {
+        await src.resolve('https://example.com/image.jpg');
+        image.update();
       });
 
       it('is an img', () => {
@@ -43,11 +48,9 @@ describe('An Image', () => {
     });
 
     describe('after src resolves to undefined', () => {
-      beforeEach(done => {
-        const resolve = ldflex.user.image.then.mock.calls[0][0];
-        resolve(undefined);
-        setImmediate(() => image.update());
-        setImmediate(done);
+      beforeEach(async () => {
+        await src.resolve(undefined);
+        image.update();
       });
 
       it('is empty', () => {
@@ -56,11 +59,9 @@ describe('An Image', () => {
     });
 
     describe('after src errors', () => {
-      beforeEach(done => {
-        const reject = ldflex.user.image.then.mock.calls[0][1];
-        reject(new Error());
-        setImmediate(() => image.update());
-        setImmediate(done);
+      beforeEach(async () => {
+        await src.reject(new Error());
+        image.update();
       });
 
       it('is empty', () => {
@@ -70,12 +71,14 @@ describe('An Image', () => {
   });
 
   describe('with src and defaultSrc properties', () => {
-    let image;
+    let image, src;
     beforeEach(() => {
-      ldflex.user = { image: { then: jest.fn() } };
+      src = mockPromise();
+      resolveLDflex.mockReturnValue(src);
       image = mount(<Image src="user.image" defaultSrc="/default.png"
         className="pic" width="100"/>);
     });
+    afterEach(() => image.unmount());
     const img = () => image.find('img').first();
 
     describe('before the expression resolves', () => {
@@ -94,11 +97,9 @@ describe('An Image', () => {
     });
 
     describe('after src resolves to a URL', () => {
-      beforeEach(done => {
-        const resolve = ldflex.user.image.then.mock.calls[0][0];
-        resolve('https://example.com/image.jpg');
-        setImmediate(() => image.update());
-        setImmediate(done);
+      beforeEach(async () => {
+        await src.resolve('https://example.com/image.jpg');
+        image.update();
       });
 
       it('is an img', () => {
@@ -116,11 +117,9 @@ describe('An Image', () => {
     });
 
     describe('after src resolves to undefined', () => {
-      beforeEach(done => {
-        const resolve = ldflex.user.image.then.mock.calls[0][0];
-        resolve(undefined);
-        setImmediate(() => image.update());
-        setImmediate(done);
+      beforeEach(async () => {
+        await src.resolve(undefined);
+        image.update();
       });
 
       it('is an img', () => {
@@ -138,11 +137,9 @@ describe('An Image', () => {
     });
 
     describe('after src errors', () => {
-      beforeEach(done => {
-        const reject = ldflex.user.image.then.mock.calls[0][1];
-        reject(new Error());
-        setImmediate(() => image.update());
-        setImmediate(done);
+      beforeEach(async () => {
+        await src.reject(new Error());
+        image.update();
       });
 
       it('is an img', () => {

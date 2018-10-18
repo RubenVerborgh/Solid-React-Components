@@ -3,19 +3,17 @@ import { LoggedInPane } from '../../src/';
 import { mount } from 'enzyme';
 import auth from 'solid-auth-client';
 
-jest.mock('solid-auth-client');
-
 describe('A LoggedInPane', () => {
-  let pane, setSession;
+  let pane;
 
   describe('with children', () => {
     beforeAll(() => {
-      auth.trackSession.mockImplementationOnce(cb => (setSession = cb));
       pane = mount(<LoggedInPane>Logged in</LoggedInPane>);
     });
+    afterAll(() => pane.unmount());
 
     describe('when the user is not logged in', () => {
-      beforeAll(() => setSession(null));
+      beforeAll(() => auth.mockWebId(null));
 
       it('is empty', () => {
         expect(pane.text()).toBe(null);
@@ -23,7 +21,7 @@ describe('A LoggedInPane', () => {
     });
 
     describe('when the user is logged in', () => {
-      beforeAll(() => setSession({ webId: 'https://example.org/#me' }));
+      beforeAll(() => auth.mockWebId('https://example.org/#me'));
 
       it('renders the content', () => {
         expect(pane.text()).toBe('Logged in');
@@ -32,13 +30,11 @@ describe('A LoggedInPane', () => {
   });
 
   describe('without children', () => {
-    beforeAll(() => {
-      auth.trackSession.mockImplementationOnce(cb => (setSession = cb));
-      pane = mount(<LoggedInPane/>);
-    });
+    beforeAll(() => (pane = mount(<LoggedInPane/>)));
+    afterAll(() => pane.unmount());
 
     describe('when the user is logged in', () => {
-      beforeAll(() => setSession({ webId: 'https://example.org/#me' }));
+      beforeAll(() => auth.mockWebId('https://example.org/#me'));
 
       it('is empty', () => {
         expect(pane.text()).toBe(null);

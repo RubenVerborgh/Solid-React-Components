@@ -1,20 +1,20 @@
 import React from 'react';
 import { DataField } from '../../src/';
 import { mount } from 'enzyme';
-import * as ldflex from '@solid/query-ldflex';
+import { resolveLDflex } from '../../src/util';
+import { mockPromise, update, setProps } from '../util';
 import auth from 'solid-auth-client';
 
-jest.mock('solid-auth-client');
-jest.setMock('@solid/query-ldflex', {});
+jest.mock('../../src/util');
 
 describe('A DataField', () => {
   describe('without expression', () => {
     let field;
-    beforeAll(done => {
+    beforeEach(async () => {
       field = mount(<DataField/>);
-      setImmediate(() => field.update());
-      setImmediate(done);
+      await update(field);
     });
+    afterEach(() => field.unmount());
     const span = () => field.find('span').first();
 
     it('is an empty span', () => {
@@ -24,7 +24,7 @@ describe('A DataField', () => {
 
     it('has the error message in the error property', () => {
       expect(span().prop('error'))
-        .toBe('Expected data to be a path or a string but got undefined');
+        .toBe('data should be an LDflex path or string but is undefined');
     });
 
     it('has the solid class', () => {
@@ -40,18 +40,17 @@ describe('A DataField', () => {
     });
   });
 
-  describe('with data set to a thenable', () => {
-    let field, expression, setSession;
-    beforeEach(done => {
-      expression = { then: jest.fn() };
-      field = mount(<DataField data={expression}/>);
-      auth.trackSession.mockImplementationOnce(cb => (setSession = cb));
-      setImmediate(() => field.update());
-      setImmediate(done);
+  describe('with a string expression', () => {
+    let field, expression;
+    beforeEach(() => {
+      expression = mockPromise();
+      resolveLDflex.mockReturnValue(expression);
+      field = mount(<DataField data="user.firstname"/>);
     });
+    afterEach(() => field.unmount());
     const span = () => field.find('span').first();
 
-    describe('before the expression resolves', () => {
+    describe('before the expression is evaluated', () => {
       it('is an empty span', () => {
         expect(span().name()).toBe('span');
         expect(span().text()).toBe('');
@@ -70,14 +69,14 @@ describe('A DataField', () => {
       });
 
       it('starts resolving the expression', () => {
-        expect(expression.then).toBeCalledTimes(1);
+        expect(resolveLDflex).toBeCalledTimes(1);
       });
     });
 
-    describe('after the expression resolves', () => {
-      beforeEach(() => {
-        const resolve = expression.then.mock.calls[0][0];
-        resolve({ toString: () => 'contents' });
+    describe('after the expression is evaluated', () => {
+      beforeEach(async () => {
+        await expression.resolve({ toString: () => 'contents' });
+        field.update();
       });
 
       it('contains the resolved contents', () => {
@@ -85,12 +84,10 @@ describe('A DataField', () => {
       });
     });
 
-    describe('after the expression resolves to undefined', () => {
-      beforeEach(done => {
-        const resolve = expression.then.mock.calls[0][0];
-        resolve(undefined);
-        setImmediate(() => field.update());
-        setImmediate(done);
+    describe('after the expression evaluates to undefined', () => {
+      beforeEach(async () => {
+        await expression.resolve(undefined);
+        field.update();
       });
 
       it('is an empty span', () => {
@@ -112,11 +109,9 @@ describe('A DataField', () => {
     });
 
     describe('after the expression errors', () => {
-      beforeEach(done => {
-        const reject = expression.then.mock.calls[0][1];
-        reject(new Error('the error message'));
-        setImmediate(() => field.update());
-        setImmediate(done);
+      beforeEach(async () => {
+        await expression.reject(new Error('the error message'));
+        field.update();
       });
 
       it('is an empty span', () => {
@@ -143,22 +138,22 @@ describe('A DataField', () => {
 
     describe('after the data changes', () => {
       let newExpression;
-      beforeEach(done => {
-        newExpression = { then: jest.fn() };
-        field.setProps({ data: newExpression });
-        setImmediate(done);
+      beforeEach(async () => {
+        newExpression = mockPromise();
+        resolveLDflex.mockReturnValue(newExpression);
+        await setProps(field, { data: 'user.other' });
       });
 
-      describe('before the expression resolves', () => {
+      describe('before the expression is evaluated', () => {
         it('starts resolving the expression', () => {
           expect(newExpression.then).toBeCalledTimes(1);
         });
       });
 
-      describe('after the expression resolves', () => {
-        beforeEach(() => {
-          const resolve = newExpression.then.mock.calls[0][0];
-          resolve('new contents');
+      describe('after the expression is evaluated', () => {
+        beforeEach(async () => {
+          await newExpression.resolve('new contents');
+          field.update();
         });
 
         it('contains the resolved contents', () => {
@@ -168,220 +163,28 @@ describe('A DataField', () => {
     });
 
     describe('after the user changes', () => {
-      beforeEach(() => {
-        setSession({ webId: 'https://example.org/#me' });
+      beforeEach(() => auth.mockWebId('https://example.org/#me'));
+
+      it('re-evaluates the expression', () => {
+        expect(resolveLDflex).toBeCalledTimes(2);
       });
+    });
+  });
+
+  describe('with a thenable', () => {
+    let field, expression;
+    beforeEach(() => {
+      expression = mockPromise();
+      field = mount(<DataField data={expression}/>);
+    });
+    afterEach(() => field.unmount());
+
+    describe('after the user changes', () => {
+      beforeEach(() => auth.mockWebId('https://example.org/#me'));
 
       it('does not re-evaluate the expression', () => {
         expect(expression.then).toBeCalledTimes(1);
       });
-    });
-  });
-
-  describe('with data set to an expression string', () => {
-    let field, setSession;
-    beforeEach(() => {
-      ldflex.user = { firstName: { then: jest.fn() } };
-      field = mount(<DataField data="user.firstName"/>);
-      auth.trackSession.mockImplementationOnce(cb => (setSession = cb));
-    });
-    const span = () => field.find('span').first();
-
-    describe('before the expression resolves', () => {
-      it('is an empty span', () => {
-        expect(span().name()).toBe('span');
-        expect(span().text()).toBe('');
-      });
-
-      it('has the solid class', () => {
-        expect(span().hasClass('solid')).toBe(true);
-      });
-
-      it('has the data class', () => {
-        expect(span().hasClass('data')).toBe(true);
-      });
-
-      it('has the pending class', () => {
-        expect(span().hasClass('pending')).toBe(true);
-      });
-
-      it('starts resolving the expression', () => {
-        expect(ldflex.user.firstName.then).toBeCalledTimes(1);
-      });
-    });
-
-    describe('after the expression resolves', () => {
-      beforeEach(done => {
-        const resolve = ldflex.user.firstName.then.mock.calls[0][0];
-        resolve({ toString: () => 'First' });
-        setImmediate(() => field.update());
-        setImmediate(done);
-      });
-
-      it('resolves to the evaluated expression', () => {
-        expect(field.text()).toBe('First');
-      });
-    });
-
-    describe('after the expression resolves to undefined', () => {
-      beforeEach(done => {
-        const resolve = ldflex.user.firstName.then.mock.calls[0][0];
-        resolve(undefined);
-        setImmediate(() => field.update());
-        setImmediate(done);
-      });
-
-      it('is an empty span', () => {
-        expect(span().name()).toBe('span');
-        expect(span().text()).toBe('');
-      });
-
-      it('has the solid class', () => {
-        expect(span().hasClass('solid')).toBe(true);
-      });
-
-      it('has the data class', () => {
-        expect(span().hasClass('data')).toBe(true);
-      });
-
-      it('has the empty class', () => {
-        expect(span().hasClass('empty')).toBe(true);
-      });
-    });
-
-    describe('after the expression errors', () => {
-      beforeEach(done => {
-        const reject = ldflex.user.firstName.then.mock.calls[0][1];
-        reject(new Error('the error message'));
-        setImmediate(() => field.update());
-        setImmediate(done);
-      });
-
-      it('is an empty span', () => {
-        expect(span().name()).toBe('span');
-        expect(span().text()).toBe('');
-      });
-
-      it('has the error message in the error property', () => {
-        expect(span().prop('error')).toBe('the error message');
-      });
-
-      it('has the solid class', () => {
-        expect(span().hasClass('solid')).toBe(true);
-      });
-
-      it('has the data class', () => {
-        expect(span().hasClass('data')).toBe(true);
-      });
-
-      it('has the error class', () => {
-        expect(span().hasClass('error')).toBe(true);
-      });
-    });
-
-    describe('after the user changes', () => {
-      beforeEach(done => {
-        setSession({ webId: 'https://example.org/#me' });
-        setImmediate(done);
-      });
-
-      it('is an empty span', () => {
-        expect(span().name()).toBe('span');
-        expect(span().text()).toBe('');
-      });
-
-      it('has the solid class', () => {
-        expect(span().hasClass('solid')).toBe(true);
-      });
-
-      it('has the data class', () => {
-        expect(span().hasClass('data')).toBe(true);
-      });
-
-      it('has the pending class', () => {
-        expect(span().hasClass('pending')).toBe(true);
-      });
-
-      it('re-evaluates the expression', () => {
-        expect(ldflex.user.firstName.then).toBeCalledTimes(2);
-      });
-
-      describe('after the expression resolves', () => {
-        beforeEach(done => {
-          const resolve = ldflex.user.firstName.then.mock.calls[1][0];
-          resolve({ toString: () => 'Second' });
-          setImmediate(() => field.update());
-          setImmediate(done);
-        });
-
-        it('resolves to the evaluated expression', () => {
-          expect(field.text()).toBe('Second');
-        });
-      });
-    });
-  });
-
-  describe('with data set to an invalid expression string', () => {
-    let field;
-    beforeEach(done => {
-      field = mount(<DataField data=".invalid"/>);
-      setImmediate(() => field.update());
-      setImmediate(done);
-    });
-    const span = () => field.find('span').first();
-
-    it('is an empty span', () => {
-      expect(span().name()).toBe('span');
-      expect(span().text()).toBe('');
-    });
-
-    it('has the error message in the error property', () => {
-      expect(span().prop('error'))
-        .toBe('Expression ".invalid" is invalid: Unexpected token .');
-    });
-
-    it('has the solid class', () => {
-      expect(span().hasClass('solid')).toBe(true);
-    });
-
-    it('has the data class', () => {
-      expect(span().hasClass('data')).toBe(true);
-    });
-
-    it('has the error class', () => {
-      expect(span().hasClass('error')).toBe(true);
-    });
-  });
-
-  describe('with data set to a non-thenable', () => {
-    let field;
-    beforeEach(done => {
-      field = mount(<DataField data={{}}/>);
-      setImmediate(() => field.update());
-      setImmediate(done);
-    });
-    const span = () => field.find('span').first();
-
-    it('is an empty span', () => {
-      expect(span().name()).toBe('span');
-      expect(span().text()).toBe('');
-    });
-
-    it('has the error message in the error property', () => {
-      expect(span().prop('error'))
-        .toBe('Expected data to be a path or a string but got [object Object]');
-    });
-
-    it('has the solid class', () => {
-      expect(span().hasClass('solid')).toBe(true);
-    });
-
-    it('has the data class', () => {
-      expect(span().hasClass('data')).toBe(true);
-    });
-
-    it('has the error class', () => {
-      expect(span().hasClass('error')).toBe(true);
     });
   });
 });
