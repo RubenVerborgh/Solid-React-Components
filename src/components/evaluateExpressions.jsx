@@ -69,7 +69,10 @@ export default function evaluateExpressions(valueProps, listProps, WrappedCompon
 
       // Update the pending flag if all evaluators wrote their value or errored,
       // and if no new evaluators are pending
-      const statuses = await Promise.all(evaluators.map(e => e.catch(() => true)));
+      const statuses = await Promise.all(evaluators.map(e => e.catch(error => {
+        console.warn('@solid/react-components', 'Expression evaluation failed.', error);
+        return true;
+      })));
       if (!statuses.some(done => !done) && Object.keys(this.pending).length === 0)
         this.setState({ pending: false });
     }
