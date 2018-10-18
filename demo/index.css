@@ -16,7 +16,7 @@ body {
 }
 
 .solid.data.error:before {
-  content: '[' attr(error) ']';
+  content: '[' attr(data-error) ']';
   font-style: italic;
   color: red;
 }

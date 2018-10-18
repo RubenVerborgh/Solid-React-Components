@@ -22,8 +22,8 @@ describe('A DataField', () => {
       expect(span().text()).toBe('');
     });
 
-    it('has the error message in the error property', () => {
-      expect(span().prop('error'))
+    it('has the error message in the data-error attribute', () => {
+      expect(span().prop('data-error'))
         .toBe('data should be an LDflex path or string but is undefined');
     });
 
@@ -119,8 +119,8 @@ describe('A DataField', () => {
         expect(span().text()).toBe('');
       });
 
-      it('has the error message in the error property', () => {
-        expect(span().prop('error')).toBe('the error message');
+      it('has the error message in the data-error attribute', () => {
+        expect(span().prop('data-error')).toBe('the error message');
       });
 
       it('has the solid class', () => {

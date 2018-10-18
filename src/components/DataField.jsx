@@ -8,7 +8,7 @@ export default evaluateExpressions(['data'], ({ pending, error, data }) => {
     return <span className="solid data pending"/>;
   // Render error state
   if (error)
-    return <span className="solid data error" error={error.message}/>;
+    return <span className="solid data error" data-error={error.message}/>;
   // Render empty value
   if (data === undefined || data === null)
     return <span className="solid data empty"/>;
