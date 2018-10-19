@@ -1,5 +1,6 @@
 # Solid React Components
 
+[![Build Status](https://travis-ci.org/solid/react-components.svg?branch=master)](https://travis-ci.org/solid/react-components)
 [![Gitter chat](https://badges.gitter.im/solid/react-components.png)](https://gitter.im/solid/chat)
 
 
