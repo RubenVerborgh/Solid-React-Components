@@ -13,28 +13,10 @@ describe('A Value', () => {
       await update(field);
     });
     afterEach(() => field.unmount());
-    const span = () => field.find('span').first();
 
-    it('is an empty span', () => {
-      expect(span().name()).toBe('span');
-      expect(span().text()).toBe('');
-    });
-
-    it('has the error message in the data-error attribute', () => {
-      expect(span().prop('data-error'))
-        .toBe('src should be an LDflex path or string but is undefined');
-    });
-
-    it('has the solid class', () => {
-      expect(span().hasClass('solid')).toBe(true);
-    });
-
-    it('has the value class', () => {
-      expect(span().hasClass('value')).toBe(true);
-    });
-
-    it('has the error class', () => {
-      expect(span().hasClass('error')).toBe(true);
+    it('is the empty string', () => {
+      expect(field.find('span')).toHaveLength(0);
+      expect(field.text()).toBe('');
     });
   });
 

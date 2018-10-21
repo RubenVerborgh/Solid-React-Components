@@ -110,6 +110,8 @@ export default function evaluateExpressions(valueProps, listProps, WrappedCompon
 
       // Create and read the iterable
       const iterable = this.resolveExpression(name, Symbol.asyncIterator);
+      if (!iterable)
+        return true;
       this.pending[name] = iterable;
       try {
         for await (const item of iterable) {
@@ -131,6 +133,8 @@ export default function evaluateExpressions(valueProps, listProps, WrappedCompon
     resolveExpression(name, expectedProperty) {
       // If the property is an LDflex string expression, resolve it
       const expr = this.props[name];
+      if (!expr)
+        return '';
       const resolved = typeof expr === 'string' ? data.resolve(expr) : expr;
 
       // Ensure that the resolved value is an LDflex path

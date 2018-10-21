@@ -28,6 +28,27 @@ describe('An evaluateExpressions wrapper', () => {
     render(<Component/>);
   });
 
+  it('accepts empty properties', async () => {
+    const Component = evaluateExpressions(['a'], ['b'], () => null);
+    const component = mount(<Component/>);
+    await update(component);
+
+    const inner = component.childAt(0).childAt(0);
+    expect(inner.props()).toHaveProperty('error', undefined);
+    component.unmount();
+  });
+
+  it('errors on invalid expression types', async () => {
+    const Component = evaluateExpressions(['a'], () => null);
+    const component = mount(<Component a={1234}/>);
+    await update(component);
+
+    const inner = component.childAt(0).childAt(0);
+    expect(inner.props()).toHaveProperty('error',
+      new Error('a should be an LDflex path or string but is 1234'));
+    component.unmount();
+  });
+
   describe('before properties are resolved', () => {
     it('passes the first property as undefined', () => {
       expect(wrapped().props()).toHaveProperty('foo', undefined);
