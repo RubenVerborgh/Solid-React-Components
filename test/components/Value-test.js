@@ -1,7 +1,7 @@
 import React from 'react';
 import { Value } from '../../src/';
 import { mount } from 'enzyme';
-import { mockPromise, update, setProps } from '../util';
+import { mockPromise, update, setProps, unmount } from '../util';
 import data from '@solid/query-ldflex';
 import auth from 'solid-auth-client';
 
@@ -12,7 +12,7 @@ describe('A Value', () => {
       field = mount(<Value/>);
       await update(field);
     });
-    afterEach(() => field.unmount());
+    afterEach(async () => unmount(field));
     const span = () => field.find('span').first();
 
     it('is an empty span', () => {
@@ -45,7 +45,7 @@ describe('A Value', () => {
       data.resolve.mockReturnValue(expression);
       field = mount(<Value src="user.firstname"/>);
     });
-    afterEach(() => field.unmount());
+    afterEach(async () => unmount(field));
     const span = () => field.find('span').first();
 
     describe('before the expression is evaluated', () => {
@@ -74,7 +74,7 @@ describe('A Value', () => {
     describe('after the expression is evaluated', () => {
       beforeEach(async () => {
         await expression.resolve({ toString: () => 'contents' });
-        field.update();
+        await update(field);
       });
 
       it('contains the resolved contents', () => {
@@ -85,7 +85,7 @@ describe('A Value', () => {
     describe('after the expression evaluates to undefined', () => {
       beforeEach(async () => {
         await expression.resolve(undefined);
-        field.update();
+        await update(field);
       });
 
       it('is an empty span', () => {
@@ -109,7 +109,7 @@ describe('A Value', () => {
     describe('after the expression errors', () => {
       beforeEach(async () => {
         await expression.reject(new Error('the error message'));
-        field.update();
+        await update(field);
       });
 
       it('is an empty span', () => {
@@ -151,7 +151,7 @@ describe('A Value', () => {
       describe('after the expression is evaluated', () => {
         beforeEach(async () => {
           await newExpression.resolve('new contents');
-          field.update();
+          await update(field);
         });
 
         it('contains the resolved contents', () => {
@@ -175,13 +175,62 @@ describe('A Value', () => {
       expression = mockPromise();
       field = mount(<Value src={expression}/>);
     });
-    afterEach(() => field.unmount());
+    afterEach(async () => unmount(field));
 
     describe('after the user changes', () => {
       beforeEach(() => auth.mockWebId('https://example.org/#me'));
 
       it('does not re-evaluate the expression', () => {
         expect(expression.then).toBeCalledTimes(1);
+      });
+    });
+  });
+
+  describe('with a string expression and children', () => {
+    let field, expression;
+    beforeEach(() => {
+      expression = mockPromise();
+      data.resolve.mockReturnValue(expression);
+      field = mount(<Value src="user.firstname">children</Value>);
+    });
+    afterEach(async () => unmount(field));
+
+    describe('before the expression is evaluated', () => {
+      it('renders the children', () => {
+        expect(field.text()).toBe('children');
+      });
+    });
+
+    describe('after the expression is evaluated', () => {
+      beforeEach(async () => {
+        await expression.resolve({ toString: () => 'contents' });
+        await update(field);
+      });
+
+      it('contains the resolved contents', () => {
+        expect(field.text()).toBe('contents');
+      });
+    });
+
+    describe('after the expression evaluates to undefined', () => {
+      beforeEach(async () => {
+        await expression.resolve(undefined);
+        await update(field);
+      });
+
+      it('renders the children', () => {
+        expect(field.text()).toBe('children');
+      });
+    });
+
+    describe('after the expression errors', () => {
+      beforeEach(async () => {
+        await expression.reject(new Error('the error message'));
+        await update(field);
+      });
+
+      it('renders the children', () => {
+        expect(field.text()).toBe('children');
       });
     });
   });

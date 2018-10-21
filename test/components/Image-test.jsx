@@ -150,4 +150,67 @@ describe('An Image', () => {
       });
     });
   });
+
+  describe('with src and children', () => {
+    let image, src;
+    beforeEach(() => {
+      src = mockPromise();
+      data.resolve.mockReturnValue(src);
+      image = mount(
+        <Image src="user.image" className="pic" width="100">
+          children
+        </Image>
+      );
+    });
+    afterEach(() => image.unmount());
+    const img = () => image.find('img').first();
+
+    describe('before the expression resolves', () => {
+      it('renders the children', () => {
+        expect(image.text()).toBe('children');
+      });
+    });
+
+    describe('after src resolves to a URL', () => {
+      beforeEach(async () => {
+        await src.resolve('https://example.com/image.jpg');
+        image.update();
+      });
+
+      it('is an img', () => {
+        expect(img().name()).toBe('img');
+      });
+
+      it('has the resolved src', () => {
+        expect(img().prop('src')).toBe('https://example.com/image.jpg');
+      });
+
+      it('copies other properties', () => {
+        expect(img().prop('className')).toBe('pic');
+        expect(img().prop('width')).toBe('100');
+      });
+    });
+
+    describe('after src resolves to undefined', () => {
+      beforeEach(async () => {
+        await src.resolve(undefined);
+        image.update();
+      });
+
+      it('renders the children', () => {
+        expect(image.text()).toBe('children');
+      });
+    });
+
+    describe('after src errors', () => {
+      beforeEach(async () => {
+        await src.reject(new Error());
+        image.update();
+      });
+
+      it('renders the children', () => {
+        expect(image.text()).toBe('children');
+      });
+    });
+  });
 });

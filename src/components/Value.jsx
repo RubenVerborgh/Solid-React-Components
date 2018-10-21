@@ -2,16 +2,18 @@ import React from 'react';
 import evaluateExpressions from './evaluateExpressions';
 
 /** Displays the value of a Solid LDflex expression. */
-export default evaluateExpressions(['src'], ({ pending, error, src }) => {
+export default evaluateExpressions(['src'], ({
+  pending, error, src, children,
+}) => {
   // Render pending state
   if (pending)
-    return <span className="solid value pending"/>;
+    return children || <span className="solid value pending"/>;
   // Render error state
   if (error)
-    return <span className="solid value error" data-error={error.message}/>;
+    return children || <span className="solid value error" data-error={error.message}/>;
   // Render empty value
   if (src === undefined || src === null)
-    return <span className="solid value empty"/>;
+    return children || <span className="solid value empty"/>;
   // Render stringified value
   return `${src}`;
 });

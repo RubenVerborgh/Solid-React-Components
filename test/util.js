@@ -45,3 +45,10 @@ export function setProps(component, props) {
     component.setProps(props, () => setImmediate(resolve));
   });
 }
+
+export function unmount(component) {
+  return new Promise(resolve => setImmediate(() => {
+    component.unmount();
+    resolve();
+  }));
+}
