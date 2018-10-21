@@ -12,6 +12,7 @@ import LogoutButton from './components/LogoutButton';
 
 import Value from './components/Value';
 import Image from './components/Image';
+import Link from './components/Link';
 
 import List from './components/List';
 
@@ -30,6 +31,7 @@ export {
 
   Value,
   Image,
+  Link,
 
   List,
 };

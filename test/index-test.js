@@ -12,6 +12,8 @@ describe('The SolidReactComponents module', () => {
     'LogoutButton',
     'Value',
     'Image',
+    'Link',
+    'List',
   ];
 
   exports.forEach(name => {

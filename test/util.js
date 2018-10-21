@@ -1,3 +1,5 @@
+import * as enzyme from 'enzyme';
+
 export function mockPromise() {
   let callbacks;
   const promise = new Promise((resolve, reject) => (callbacks = { resolve, reject }));
@@ -33,22 +35,26 @@ export function asyncIterable(...items) {
   return iterable;
 }
 
+export function mount(component) {
+  return update(enzyme.mount(component));
+}
+
 export function update(component) {
   return new Promise(resolve => setImmediate(() => {
     component.update();
-    resolve();
+    resolve(component);
   }));
 }
 
 export function setProps(component, props) {
   return new Promise(resolve => {
-    component.setProps(props, () => setImmediate(resolve));
+    component.setProps(props, () => setImmediate(resolve, component));
   });
 }
 
 export function unmount(component) {
   return new Promise(resolve => setImmediate(() => {
     component.unmount();
-    resolve();
+    resolve(component);
   }));
 }
