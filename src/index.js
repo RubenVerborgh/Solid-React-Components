@@ -13,6 +13,8 @@ import LogoutButton from './components/LogoutButton';
 import Value from './components/Value';
 import Image from './components/Image';
 import Link from './components/Link';
+import Label from './components/Label';
+import Name from './components/Name';
 
 import List from './components/List';
 
@@ -32,6 +34,8 @@ export {
   Value,
   Image,
   Link,
+  Label,
+  Name,
 
   List,
 };

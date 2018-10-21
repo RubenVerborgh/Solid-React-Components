@@ -13,6 +13,8 @@ describe('The SolidReactComponents module', () => {
     'Value',
     'Image',
     'Link',
+    'Label',
+    'Name',
     'List',
   ];
 
