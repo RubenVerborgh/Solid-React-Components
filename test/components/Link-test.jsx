@@ -5,6 +5,8 @@ import data from '@solid/query-ldflex';
 
 data.resolve.mockImplementation(async (path) => ({
   'user.inbox': 'https://user.me/inbox/',
+  'other.inbox': 'https://other.org/inbox/',
+  '[https://user.me/inbox/].label': 'My Inbox',
 })[path]);
 
 describe('Link', () => {
@@ -15,9 +17,16 @@ describe('Link', () => {
   });
 
   it('renders a link with href', async () => {
+    const link = await mount(<Link href="other.inbox"/>);
+    expect(link.html())
+      .toBe('<a href="https://other.org/inbox/">https://other.org/inbox/</a>');
+    link.unmount();
+  });
+
+  it('renders a link with href with an available label', async () => {
     const link = await mount(<Link href="user.inbox"/>);
     expect(link.html())
-      .toBe('<a href="https://user.me/inbox/">https://user.me/inbox/</a>');
+      .toBe('<a href="https://user.me/inbox/">My Inbox</a>');
     link.unmount();
   });
 
