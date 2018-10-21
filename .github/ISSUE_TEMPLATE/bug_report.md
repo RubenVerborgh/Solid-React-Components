@@ -3,6 +3,8 @@ name: Bug report
 about: Tell us about something that is broken
 
 ---
+<!-- Thanks for helping out! Following this template lets us respond faster. -->
+
 A clear and concise description of what the bug is,
 focused on the difference between expected and observed behavior.
 

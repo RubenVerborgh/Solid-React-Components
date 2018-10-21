@@ -1,3 +1,5 @@
+<!-- Thanks for helping out! Following this template lets us respond faster. -->
+
 ### Kind of change
 <!-- Check at least one. Update "[ ]" to "[x]" to check a box -->
 - [ ] Bugfix
