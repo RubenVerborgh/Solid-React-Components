@@ -1,6 +1,6 @@
 import React from 'react';
 import { Name } from '../../src/';
-import { mount, unmount } from '../util';
+import { mount } from '../util';
 import data from '@solid/query-ldflex';
 
 data.resolve.mockImplementation(async (path) => ({
@@ -11,12 +11,12 @@ describe('Name', () => {
   it('renders a name with src', async () => {
     const name = await mount(<Name src="user"/>);
     expect(name.text()).toBe('The User');
-    await unmount(name);
+    name.unmount();
   });
 
   it('renders a name with children', async () => {
     const name = await mount(<Name src="other">default</Name>);
     expect(name.text()).toBe('default');
-    await unmount(name);
+    name.unmount();
   });
 });

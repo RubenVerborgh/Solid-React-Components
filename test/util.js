@@ -1,10 +1,14 @@
 import * as enzyme from 'enzyme';
 
+export function immediate(value) {
+  return new Promise(resolve => setImmediate(resolve, value));
+}
+
 export function mockPromise() {
   let callbacks;
   const promise = new Promise((resolve, reject) => (callbacks = { resolve, reject }));
-  promise.resolve = v => new Promise(r => setImmediate(r) && callbacks.resolve(v));
-  promise.reject = e => new Promise(r => setImmediate(r) && callbacks.reject(e));
+  promise.resolve = value => callbacks.resolve(value) || immediate();
+  promise.reject = error => callbacks.reject(error) || immediate();
   jest.spyOn(promise, 'then');
   return promise;
 }
@@ -23,10 +27,7 @@ export function asyncIterable(...items) {
     // Halt iteration until resume is called
     if (value === undefined) {
       return new Promise(resolve => {
-        iterable.resume = () => {
-          resolve(next());
-          return new Promise(r => setImmediate(r));
-        };
+        iterable.resume = () => immediate(resolve(next()));
       });
     }
     // Return a simple value
@@ -39,22 +40,13 @@ export function mount(component) {
   return update(enzyme.mount(component));
 }
 
-export function update(component) {
-  return new Promise(resolve => setImmediate(() => {
-    component.update();
-    resolve(component);
-  }));
+export async function update(component) {
+  await immediate();
+  component.update();
+  return component;
 }
 
-export function setProps(component, props) {
-  return new Promise(resolve => {
-    component.setProps(props, () => setImmediate(resolve, component));
-  });
-}
-
-export function unmount(component) {
-  return new Promise(resolve => setImmediate(() => {
-    component.unmount();
-    resolve(component);
-  }));
+export async function setProps(component, props) {
+  await new Promise(resolve => component.setProps(props, resolve));
+  return immediate(component);
 }

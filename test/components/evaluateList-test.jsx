@@ -192,7 +192,6 @@ describe('An evaluateList wrapper', () => {
       beforeEach(async () => {
         newItems = asyncIterable('x', 'y', undefined, 'z');
         await setProps(wrapper, { items: newItems });
-        await items.resume();
         wrapper.update();
       });
 

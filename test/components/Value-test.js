@@ -1,7 +1,7 @@
 import React from 'react';
 import { Value } from '../../src/';
 import { mount } from 'enzyme';
-import { mockPromise, update, setProps, unmount } from '../util';
+import { mockPromise, update, setProps } from '../util';
 import data from '@solid/query-ldflex';
 import auth from 'solid-auth-client';
 
@@ -12,7 +12,7 @@ describe('A Value', () => {
       field = mount(<Value/>);
       await update(field);
     });
-    afterEach(async () => unmount(field));
+    afterEach(() => field.unmount());
     const span = () => field.find('span').first();
 
     it('is an empty span', () => {
@@ -45,7 +45,7 @@ describe('A Value', () => {
       data.resolve.mockReturnValue(expression);
       field = mount(<Value src="user.firstname"/>);
     });
-    afterEach(async () => unmount(field));
+    afterEach(() => field.unmount());
     const span = () => field.find('span').first();
 
     describe('before the expression is evaluated', () => {
@@ -175,7 +175,7 @@ describe('A Value', () => {
       expression = mockPromise();
       field = mount(<Value src={expression}/>);
     });
-    afterEach(async () => unmount(field));
+    afterEach(() => field.unmount());
 
     describe('after the user changes', () => {
       beforeEach(() => auth.mockWebId('https://example.org/#me'));
@@ -193,7 +193,7 @@ describe('A Value', () => {
       data.resolve.mockReturnValue(expression);
       field = mount(<Value src="user.firstname">children</Value>);
     });
-    afterEach(async () => unmount(field));
+    afterEach(() => field.unmount());
 
     describe('before the expression is evaluated', () => {
       it('renders the children', () => {

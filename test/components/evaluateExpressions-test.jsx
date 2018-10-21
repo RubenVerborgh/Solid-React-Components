@@ -263,11 +263,11 @@ describe('An evaluateExpressions wrapper', () => {
     });
 
     describe('after the user changes', () => {
-      beforeEach(async () => {
+      beforeEach(() => {
         bar = mockPromise();
         bar.resolve('second change');
         data.resolve.mockReturnValue(bar);
-        await auth.mockWebId('https://example.org/#me');
+        auth.mockWebId('https://example.org/#me');
         wrapper.update();
       });
 

@@ -31,24 +31,25 @@ export default function evaluateExpressions(valueProps, listProps, WrappedCompon
     }
 
     componentDidUpdate(prevProps) {
-      // Reload any resolving property that has changed
+      // A property needs to be re-evaluated if it changed
       // or, if it is a string expression, when the user has changed
       // (which might influence the expression's evaluation).
       const userChanged = this.props.webId !== prevProps.webId;
       const propChanged = name =>
         this.props[name] !== prevProps[name] ||
           (userChanged && typeof this.props[name] === 'string');
+
+      // Re-evaluate changed singular values and lists
       const changedValues = this.valueProps.filter(propChanged);
       const changedLists = this.listProps.filter(propChanged);
-
-      // Wait for a possible change of user to propagate to the expression engine
       if (changedValues.length > 0 || changedLists.length > 0)
-        setImmediate(() => this.evaluateExpressions(changedValues, changedLists));
+        this.evaluateExpressions(changedValues, changedLists);
     }
 
     componentWillUnmount() {
       // Avoid state updates from pending evaluators
       this.pending = {};
+      this.cancel = true;
     }
 
     /** Evaluates the property expressions into the state. */
@@ -73,6 +74,10 @@ export default function evaluateExpressions(valueProps, listProps, WrappedCompon
         console.warn('@solid/react-components', 'Expression evaluation failed.', error);
         return true;
       })));
+      // Stop if results are no longer needed (e.g., unmounted)
+      if (this.cancel)
+        return;
+      // Reset the pending state if all are done and no others are pending
       if (!statuses.some(done => !done) && Object.keys(this.pending).length === 0)
         this.setState({ pending: false });
     }
