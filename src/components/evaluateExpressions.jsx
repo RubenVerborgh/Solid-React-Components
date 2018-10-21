@@ -1,6 +1,6 @@
 import React from 'react';
 import withWebId from './withWebId';
-import { resolveLDflex } from '../util';
+import data from '@solid/query-ldflex';
 
 /**
  * Higher-order component that evaluates LDflex expressions in properties
@@ -126,7 +126,7 @@ export default function evaluateExpressions(valueProps, listProps, WrappedCompon
     resolveExpression(name, expectedProperty) {
       // If the property is an LDflex string expression, resolve it
       const expr = this.props[name];
-      const resolved = typeof expr === 'string' ? resolveLDflex(expr) : expr;
+      const resolved = typeof expr === 'string' ? data.resolve(expr) : expr;
 
       // Ensure that the resolved value is an LDflex path
       if (!resolved || typeof resolved[expectedProperty] !== 'function')

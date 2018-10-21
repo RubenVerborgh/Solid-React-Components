@@ -1,21 +1,15 @@
 import React from 'react';
 import { Image } from '../../src/';
 import { mount } from 'enzyme';
-import { resolveLDflex } from '../../src/util';
 import { mockPromise } from '../util';
-
-jest.mock('../../src/util', () => {
-  const util = require.requireActual('../../src/util');
-  util.resolveLDflex = jest.fn();
-  return util;
-});
+import data from '@solid/query-ldflex';
 
 describe('An Image', () => {
   describe('with a src property', () => {
     let image, src;
     beforeEach(() => {
       src = mockPromise();
-      resolveLDflex.mockReturnValue(src);
+      data.resolve.mockReturnValue(src);
       image = mount(<Image src="user.image" className="pic" width="100"/>);
     });
     afterEach(() => image.unmount());
@@ -74,7 +68,7 @@ describe('An Image', () => {
     let image, src;
     beforeEach(() => {
       src = mockPromise();
-      resolveLDflex.mockReturnValue(src);
+      data.resolve.mockReturnValue(src);
       image = mount(<Image src="user.image" defaultSrc="/default.png"
         className="pic" width="100"/>);
     });

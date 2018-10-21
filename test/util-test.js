@@ -1,19 +1,6 @@
-import { resolveLDflex, domProps } from '../src/util';
-import * as data from '@solid/query-ldflex';
+import { domProps } from '../src/util';
 
 describe('util', () => {
-  describe('resolveLDflex', () => {
-    it('evaluates expressions on the @solid/query-ldflex root path', () => {
-      data.foo = { bar: 'value' };
-      expect(resolveLDflex('foo.bar')).toEqual('value');
-    });
-
-    it('errors on invalid expressions', () => {
-      expect(() => resolveLDflex('.foo.bar'))
-        .toThrow('Expression ".foo.bar" is invalid: Unexpected token .');
-    });
-  });
-
   describe('domProps', () => {
     describe('filtering an object', () => {
       const props = {

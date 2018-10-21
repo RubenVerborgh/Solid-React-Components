@@ -2,9 +2,7 @@ import React from 'react';
 import { List } from '../../src/';
 import { mount } from 'enzyme';
 import { asyncIterable } from '../util';
-import { resolveLDflex } from '../../src/util';
-
-jest.mock('../../src/util');
+import data from '@solid/query-ldflex';
 
 describe('A List', () => {
   describe('for an expression resulting in a list of size 0', () => {
@@ -12,7 +10,7 @@ describe('A List', () => {
     const iterable = asyncIterable(undefined, ...items);
     let list;
     beforeAll(() => {
-      resolveLDflex.mockReturnValue(iterable);
+      data.resolve.mockReturnValue(iterable);
       list = mount(<List src="expr.items"/>);
     });
     afterAll(() => list.unmount());
@@ -40,7 +38,7 @@ describe('A List', () => {
     const iterable = asyncIterable(undefined, ...items);
     let list;
     beforeAll(() => {
-      resolveLDflex.mockReturnValue(iterable);
+      data.resolve.mockReturnValue(iterable);
       list = mount(<List src="expr.items"/>);
     });
     afterAll(() => list.unmount());

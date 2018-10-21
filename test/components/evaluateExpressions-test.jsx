@@ -1,11 +1,9 @@
 import React from 'react';
 import { evaluateExpressions } from '../../src/';
 import { mount, render } from 'enzyme';
-import { resolveLDflex } from '../../src/util';
 import { mockPromise, update, setProps } from '../util';
+import data from '@solid/query-ldflex';
 import auth from 'solid-auth-client';
-
-jest.mock('../../src/util');
 
 describe('An evaluateExpressions wrapper', () => {
   const Wrapper = evaluateExpressions(['foo', 'bar'], () => <span>contents</span>);
@@ -15,7 +13,7 @@ describe('An evaluateExpressions wrapper', () => {
     foo = mockPromise();
     bar = mockPromise();
     auth.mockWebId(null);
-    resolveLDflex.mockReturnValue(bar);
+    data.resolve.mockReturnValue(bar);
     wrapper = mount(<Wrapper foo={foo} bar="user.bar" other="value" />);
   });
   afterEach(() => wrapper.unmount());
@@ -52,15 +50,15 @@ describe('An evaluateExpressions wrapper', () => {
     });
 
     it('resolves the string expression', () => {
-      expect(resolveLDflex).toHaveBeenCalledTimes(1);
-      expect(resolveLDflex).toHaveBeenLastCalledWith('user.bar');
+      expect(data.resolve).toHaveBeenCalledTimes(1);
+      expect(data.resolve).toHaveBeenLastCalledWith('user.bar');
     });
 
     describe('after the second property changes', () => {
       let newBar;
       beforeEach(async () => {
         newBar = mockPromise();
-        resolveLDflex.mockReturnValue(newBar);
+        data.resolve.mockReturnValue(newBar);
         await setProps(wrapper, { bar: 'user.newBar' });
         await update(wrapper);
       });
@@ -70,7 +68,7 @@ describe('An evaluateExpressions wrapper', () => {
       });
 
       it('resolves the string expression', () => {
-        expect(resolveLDflex).toHaveBeenLastCalledWith('user.newBar');
+        expect(data.resolve).toHaveBeenLastCalledWith('user.newBar');
       });
 
       describe('after the original second property resolves', () => {
@@ -135,7 +133,7 @@ describe('An evaluateExpressions wrapper', () => {
       let newBar;
       beforeEach(async () => {
         newBar = mockPromise();
-        resolveLDflex.mockReturnValue(newBar);
+        data.resolve.mockReturnValue(newBar);
         await setProps(wrapper, { bar: 'user.newBar' });
         await update(wrapper);
       });
@@ -145,7 +143,7 @@ describe('An evaluateExpressions wrapper', () => {
       });
 
       it('resolves the string expression', () => {
-        expect(resolveLDflex).toHaveBeenLastCalledWith('user.newBar');
+        expect(data.resolve).toHaveBeenLastCalledWith('user.newBar');
       });
 
       describe('after the original second property resolves', () => {
@@ -268,7 +266,7 @@ describe('An evaluateExpressions wrapper', () => {
       beforeEach(async () => {
         bar = mockPromise();
         bar.resolve('second change');
-        resolveLDflex.mockReturnValue(bar);
+        data.resolve.mockReturnValue(bar);
         await auth.mockWebId('https://example.org/#me');
         wrapper.update();
       });
@@ -286,7 +284,7 @@ describe('An evaluateExpressions wrapper', () => {
       });
 
       it('re-evaluates the string expression', () => {
-        expect(resolveLDflex).toBeCalledTimes(2);
+        expect(data.resolve).toBeCalledTimes(2);
       });
 
       describe('after both properties resolve', () => {

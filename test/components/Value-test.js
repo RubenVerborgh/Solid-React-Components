@@ -1,11 +1,9 @@
 import React from 'react';
 import { Value } from '../../src/';
 import { mount } from 'enzyme';
-import { resolveLDflex } from '../../src/util';
 import { mockPromise, update, setProps } from '../util';
+import data from '@solid/query-ldflex';
 import auth from 'solid-auth-client';
-
-jest.mock('../../src/util');
 
 describe('A Value', () => {
   describe('without expression', () => {
@@ -44,7 +42,7 @@ describe('A Value', () => {
     let field, expression;
     beforeEach(() => {
       expression = mockPromise();
-      resolveLDflex.mockReturnValue(expression);
+      data.resolve.mockReturnValue(expression);
       field = mount(<Value src="user.firstname"/>);
     });
     afterEach(() => field.unmount());
@@ -69,7 +67,7 @@ describe('A Value', () => {
       });
 
       it('starts resolving the expression', () => {
-        expect(resolveLDflex).toBeCalledTimes(1);
+        expect(data.resolve).toBeCalledTimes(1);
       });
     });
 
@@ -140,7 +138,7 @@ describe('A Value', () => {
       let newExpression;
       beforeEach(async () => {
         newExpression = mockPromise();
-        resolveLDflex.mockReturnValue(newExpression);
+        data.resolve.mockReturnValue(newExpression);
         await setProps(field, { src: 'user.other' });
       });
 
@@ -166,7 +164,7 @@ describe('A Value', () => {
       beforeEach(() => auth.mockWebId('https://example.org/#me'));
 
       it('re-evaluates the expression', () => {
-        expect(resolveLDflex).toBeCalledTimes(2);
+        expect(data.resolve).toBeCalledTimes(2);
       });
     });
   });
