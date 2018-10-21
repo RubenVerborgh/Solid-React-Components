@@ -1,5 +1,8 @@
 import React from 'react';
-import { AuthButton, LoggedInPane, LoggedOutPane, Value, Image, List } from '../src/';
+import {
+  AuthButton, LoggedInPane, LoggedOutPane,
+  Value, Image, List, Link, Label,
+} from '../src/';
 
 export default () =>
   <div>
@@ -21,7 +24,8 @@ export default () =>
     <footer>
       <p>
         Solid React demo app
-        by <Value src="[https://ruben.verborgh.org/profile/#me].label"/>
+        by <Label src="[https://ruben.verborgh.org/profile/#me]"/> {' '}
+        (<Link href="[https://ruben.verborgh.org/profile/#me].homepage"/>)
       </p>
     </footer>
   </div>;
