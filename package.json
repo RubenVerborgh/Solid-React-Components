@@ -1,8 +1,13 @@
 {
   "name": "@solid/react",
   "version": "1.0.0",
+  "description": "Efficiently build Solid apps and components with React",
   "author": "Ruben Verborgh <ruben@verborgh.org> (https://ruben.verborgh.org/)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/solid/react-components"
+  },
   "main": "lib/index.js",
   "files": [
     "src",
