@@ -56,17 +56,4 @@ describe('A withWebId wrapper', () => {
       expect(wrapper.childAt(0).props()).toHaveProperty('foo', 'bar');
     });
   });
-
-  describe('when the component unmounts', () => {
-    let listener;
-    beforeEach(() => {
-      listener = wrapper.first().instance()._tracker;
-      wrapper.unmount();
-    });
-
-    it('removes the session listener', () => {
-      expect(auth.removeListener).toHaveBeenCalledTimes(1);
-      expect(auth.removeListener).toHaveBeenLastCalledWith('session', listener);
-    });
-  });
 });
