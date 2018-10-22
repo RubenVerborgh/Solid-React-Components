@@ -151,7 +151,7 @@ Your component will then get back the result
 in the property of the same name.
 
 ```jsx
-const MyComponent = withWebId(['name'], (props) =>
+const MyComponent = evaluateExpressions(['name'], props =>
   <p>The name is {`${props.name}`}.</p>);
 ```
 ```jsx
@@ -166,7 +166,7 @@ If a property contains a list of things rather than a single value,
 pass its name to the second parameter:
 
 ```jsx
-const MyComponent = withWebId(['name'], ['friends'], props =>
+const MyComponent = evaluateExpressions(['name'], ['friends'], props =>
   <p>Your name is {`${props.name}`} and you have {props.friends.length} friends.</p>);
 ```
 ```jsx
