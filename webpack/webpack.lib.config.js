@@ -1,19 +1,15 @@
-const common = require('./webpack.common.config');
-const { resolve } = require('path');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+/*
+  Exports only @solid/react itself, expecting:
+  - global.solid.auth to be solid-auth-client
+  - global.solid.data to be @solid/query-ldflex
+*/
 
-const outputDir = './dist/';
+const applyCommonSettings = require('./webpack.common.config');
 
-module.exports = Object.assign({
-  entry: {
-    'solid-react': './src/',
-  },
+module.exports = applyCommonSettings('./dist', ({ outputDir }) => ({
   output: {
-    path: resolve(outputDir),
-    filename: '[name].bundle.js',
+    path: outputDir,
+    filename: '[name].js',
     library: ['solid', 'react'],
   },
-  plugins: [
-    new CleanWebpackPlugin([outputDir]),
-  ],
-}, common);
+}));

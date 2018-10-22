@@ -1,11 +1,11 @@
-const common = require('./webpack.common.config');
-const { resolve } = require('path');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+/*
+  Exports the demo application.
+*/
+
+const applyCommonSettings = require('./webpack.common.config');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin');
-
-const outputDir = './dist/demo/';
 
 const localAssets = [
   'index.css',
@@ -19,16 +19,15 @@ const externalAssets = [
   '@solid/query-ldflex/dist/solid-query-ldflex.bundle.js.map',
 ];
 
-module.exports = Object.assign({
+module.exports = applyCommonSettings('./dist/demo/', ({ outputDir }) => ({
   entry: {
     demo: './demo/index.jsx',
   },
   output: {
     filename: '[name].bundle.js',
-    path: resolve(outputDir),
+    path: outputDir,
   },
   plugins: [
-    new CleanWebpackPlugin([outputDir]),
     new CopyWebpackPlugin(localAssets, { context: 'demo' }),
     new CopyWebpackPlugin(externalAssets.map(a => require.resolve(a))),
     new HtmlWebpackPlugin({
@@ -43,4 +42,4 @@ module.exports = Object.assign({
       append: false,
     }),
   ],
-}, common);
+}));

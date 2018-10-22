@@ -13,7 +13,8 @@
     "src",
     "lib",
     "dist",
-    "!dist/demo"
+    "!dist/demo",
+    "webpack"
   ],
   "dependencies": {
     "@solid/query-ldflex": "^1.0.0",
@@ -27,7 +28,6 @@
     "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^9.0.0",
     "babel-loader": "^8.0.2",
-    "clean-webpack-plugin": "^0.1.19",
     "copy-webpack-plugin": "^4.5.2",
     "enzyme": "^3.6.0",
     "enzyme-adapter-react-16": "^1.5.0",
@@ -45,10 +45,12 @@
     "webpack-dev-server": "^3.1.8"
   },
   "scripts": {
-    "build": "npm run build:lib && npm run build:dist && npm run build:demo",
-    "build:demo": "webpack --config=./webpack/webpack.demo.config.js",
-    "build:dist": "webpack --mode=production --config=./webpack/webpack.lib.config.js",
+    "build": "npm run build:clean && npm run build:lib && npm run build:dist && npm run build:bundle && npm run build:demo",
+    "build:clean": "rm -rf dist",
     "build:lib": "babel src --out-dir lib",
+    "build:dist": "webpack -p --config=./webpack/webpack.lib.config.js",
+    "build:bundle": "webpack -p --config=./webpack/webpack.bundle.config.js",
+    "build:demo": "webpack --config=./webpack/webpack.demo.config.js",
     "jest": "jest",
     "lint": "eslint --ext .js,.jsx src test demo webpack",
     "prepublishOnly": "npm run build",
