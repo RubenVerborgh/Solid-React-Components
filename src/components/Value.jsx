@@ -2,9 +2,9 @@ import React from 'react';
 import evaluateExpressions from './evaluateExpressions';
 
 /** Displays the value of a Solid LDflex expression. */
-export default evaluateExpressions(['src'], ({
+export default evaluateExpressions(['src'], function Value({
   pending, error, src, children,
-}) => {
+}) {
   // Render pending state
   if (pending)
     return children || <span className="solid value pending"/>;

@@ -3,8 +3,8 @@ import evaluateExpressions from './evaluateExpressions';
 import { domProps } from '../util';
 
 /** Displays an image whose source is a Solid LDflex expression. */
-export default evaluateExpressions(['src'], ({
+export default evaluateExpressions(['src'], function Image({
   defaultSrc, src = defaultSrc, children = null, ...props
-}) =>
-  src ? <img src={src} alt="" {...domProps(props)}/> : children
-);
+}) {
+  return src ? <img src={src} alt="" {...domProps(props)}/> : children;
+});
