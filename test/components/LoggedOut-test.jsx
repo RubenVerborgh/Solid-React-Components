@@ -1,14 +1,14 @@
 import React from 'react';
-import { LoggedOutPane } from '../../src/';
+import { LoggedOut } from '../../src/';
 import { mount } from 'enzyme';
 import auth from 'solid-auth-client';
 
-describe('A LoggedOutPane', () => {
+describe('A LoggedOut pane', () => {
   let pane;
 
   describe('with children', () => {
     beforeAll(() => {
-      pane = mount(<LoggedOutPane>Logged out</LoggedOutPane>);
+      pane = mount(<LoggedOut>Logged out</LoggedOut>);
     });
     afterAll(() => pane.unmount());
 
@@ -30,7 +30,7 @@ describe('A LoggedOutPane', () => {
   });
 
   describe('without children', () => {
-    beforeAll(() => (pane = mount(<LoggedOutPane/>)));
+    beforeAll(() => (pane = mount(<LoggedOut/>)));
     afterAll(() => pane.unmount());
 
     describe('when the user is not logged in', () => {

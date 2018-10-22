@@ -4,9 +4,8 @@ describe('The SolidReactComponents module', () => {
   const exports = [
     'withWebId',
     'evaluateExpressions',
-    'AuthPane',
-    'LoggedInPane',
-    'LoggedOutPane',
+    'LoggedIn',
+    'LoggedOut',
     'AuthButton',
     'LoginButton',
     'LogoutButton',

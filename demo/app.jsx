@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  AuthButton, LoggedInPane, LoggedOutPane,
+  AuthButton, LoggedIn, LoggedOut,
   Value, Image, List, Link, Label,
 } from '../src/';
 
@@ -11,15 +11,15 @@ export default () =>
       <AuthButton popup="popup.html"/>
     </header>
     <main>
-      <LoggedInPane>
+      <LoggedIn>
         <Image src="user.image" defaultSrc="profile.svg" className="profile"/>
         <p>Welcome back, <Value src="user.name"/>.</p>
         <h2>Friends</h2>
         <List src="user.friends.firstName"/>
-      </LoggedInPane>
-      <LoggedOutPane>
+      </LoggedIn>
+      <LoggedOut>
         <p>You are logged out.</p>
-      </LoggedOutPane>
+      </LoggedOut>
     </main>
     <footer>
       <p>

@@ -2,9 +2,8 @@ import withWebId from './components/withWebId';
 import evaluateExpressions from './components/evaluateExpressions';
 import evaluateList from './components/evaluateList';
 
-import AuthPane from './components/AuthPane';
-import LoggedInPane from './components/LoggedInPane';
-import LoggedOutPane from './components/LoggedOutPane';
+import LoggedIn from './components/LoggedIn';
+import LoggedOut from './components/LoggedOut';
 
 import AuthButton from './components/AuthButton';
 import LoginButton from './components/LoginButton';
@@ -23,9 +22,8 @@ export {
   evaluateExpressions,
   evaluateList,
 
-  AuthPane,
-  LoggedInPane,
-  LoggedOutPane,
+  LoggedIn,
+  LoggedOut,
 
   AuthButton,
   LoginButton,
