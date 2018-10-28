@@ -122,4 +122,49 @@ describe('A List', () => {
       });
     });
   });
+
+  describe('with a limit and offset', () => {
+    const items = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+    const iterable = asyncIterable(...items);
+    let list;
+    beforeAll(async () => {
+      data.resolve.mockReturnValue(iterable);
+      list = mount(<List src="expr.items" offset="2" limit="3"/>);
+      await update(list);
+    });
+    afterAll(() => list.unmount());
+
+    it('renders `limit` elements', () => {
+      expect(list.find('ul').children()).toHaveLength(3);
+    });
+
+    it('starts at `offset`', () => {
+      expect(list.find('ul').childAt(0).text()).toBe('c');
+    });
+
+    it('renders all items', () => {
+      expect(list.find('ul').childAt(0).text()).toBe('c');
+      expect(list.find('ul').childAt(1).text()).toBe('d');
+      expect(list.find('ul').childAt(2).text()).toBe('e');
+    });
+  });
+
+  describe('with a filter', () => {
+    const items = [0, 1, 2, 3, 4, 5, 6];
+    const iterable = asyncIterable(...items);
+    let list;
+    beforeAll(async () => {
+      data.resolve.mockReturnValue(iterable);
+      list = mount(<List src="expr.items" filter={n => n % 2}/>);
+      await update(list);
+    });
+    afterAll(() => list.unmount());
+
+    it('renders matching items', () => {
+      expect(list.find('ul').children()).toHaveLength(3);
+      expect(list.find('ul').childAt(0).text()).toBe('1');
+      expect(list.find('ul').childAt(1).text()).toBe('3');
+      expect(list.find('ul').childAt(2).text()).toBe('5');
+    });
+  });
 });
