@@ -16,3 +16,11 @@ export function domProps(props = {}) {
   }
   return safe;
 }
+
+/**
+ * Determines the display name of a component
+ * https://reactjs.org/docs/higher-order-components.html
+ */
+export function getDisplayName(Component) {
+  return Component.displayName || Component.name || 'Component';
+}

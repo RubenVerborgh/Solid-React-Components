@@ -1,19 +1,22 @@
 import React from 'react';
 import withWebId from './withWebId';
+import { getDisplayName } from '../util';
 import data from '@solid/query-ldflex';
 
 /**
  * Higher-order component that evaluates LDflex expressions in properties
  * and passes their results to the wrapped component.
  */
-export default function evaluateExpressions(valueProps, listProps, WrappedComponent) {
+export default function evaluateExpressions(valueProps, listProps, Component) {
   // Shift the optional listProps parameter when not specified
-  if (!WrappedComponent) {
-    WrappedComponent = listProps;
+  if (!Component) {
+    Component = listProps;
     listProps = [];
   }
 
   class EvaluateExpressions extends React.Component {
+    static displayName = `EvaluateExpressions(${getDisplayName(Component)})`;
+
     constructor(props) {
       super(props);
       this.state = { pending: true };
@@ -145,7 +148,7 @@ export default function evaluateExpressions(valueProps, listProps, WrappedCompon
     }
 
     render() {
-      return <WrappedComponent {...this.props} {...this.state} />;
+      return <Component {...this.props} {...this.state} />;
     }
   }
   return withWebId(EvaluateExpressions);
