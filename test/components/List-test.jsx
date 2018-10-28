@@ -1,7 +1,7 @@
 import React from 'react';
 import { List } from '../../src/';
 import { mount } from 'enzyme';
-import { asyncIterable } from '../util';
+import { asyncIterable, update } from '../util';
 import data from '@solid/query-ldflex';
 
 describe('A List', () => {
@@ -63,6 +63,62 @@ describe('A List', () => {
 
       it('contains the correct elements', () => {
         expect(list.find('ul').children().map(c => c.text())).toEqual(items);
+      });
+    });
+  });
+
+  describe('with children and a container', () => {
+    const items = ['a', 'b', 'c'];
+    const iterable = asyncIterable(...items);
+    let list;
+    beforeAll(async () => {
+      data.resolve.mockReturnValue(iterable);
+      list = mount(
+        <List src="expr.items" container={children => <div>{children}</div>}>
+          {(item, i) => <span key={i}>{item}</span>}
+        </List>
+      );
+      await update(list);
+    });
+    afterAll(() => list.unmount());
+
+    it('uses the custom container', () => {
+      expect(list.find('div').children()).toHaveLength(items.length);
+    });
+
+    it('uses the custom children function', () => {
+      expect(list.find('div').children()).toHaveLength(3);
+      list.find('div').children().forEach((child, i) => {
+        expect(child.name()).toBe('span');
+        expect(child.text()).toBe(items[i]);
+      });
+    });
+  });
+
+  describe('with children and an empty container', () => {
+    const items = ['a', 'b', 'c'];
+    const iterable = asyncIterable(...items);
+    let list;
+    beforeAll(async () => {
+      data.resolve.mockReturnValue(iterable);
+      list = mount(
+        <List src="expr.items" container="">
+          {(item, i) => <span key={i}>{item}</span>}
+        </List>
+      );
+      await update(list);
+    });
+    afterAll(() => list.unmount());
+
+    it('uses no container', () => {
+      expect(list.find('ul')).toHaveLength(0);
+    });
+
+    it('uses the custom children function', () => {
+      expect(list.find('span')).toHaveLength(3);
+      list.find('span').forEach((child, i) => {
+        expect(child.name()).toBe('span');
+        expect(child.text()).toBe(items[i]);
       });
     });
   });
