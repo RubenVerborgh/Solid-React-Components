@@ -46,7 +46,7 @@
   },
   "scripts": {
     "build": "npm run build:clean && npm run build:lib && npm run build:dist && npm run build:bundle && npm run build:demo",
-    "build:clean": "rm -rf dist",
+    "build:clean": "rm -rf lib dist",
     "build:lib": "babel src --out-dir lib",
     "build:dist": "webpack -p --config=./webpack/webpack.lib.config.js",
     "build:bundle": "webpack -p --config=./webpack/webpack.bundle.config.js",
