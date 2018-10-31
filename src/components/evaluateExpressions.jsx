@@ -1,6 +1,6 @@
 import React from 'react';
 import withWebId from './withWebId';
-import { getDisplayName } from '../util';
+import { getDisplayName, createTaskQueue } from '../util';
 import data from '@solid/query-ldflex';
 
 /**
@@ -111,23 +111,33 @@ export default function evaluateExpressions(valueProps, listProps, Component) {
     async evaluateListExpression(name) {
       this.setState({ [name]: [] });
 
-      // Create and read the iterable
+      // Create the iterable
       const iterable = this.resolveExpression(name, Symbol.asyncIterator);
       if (!iterable)
         return true;
       this.pending[name] = iterable;
+
+      // Read the iterable
+      const items = [];
+      const updateState = () => this.setState({ [name]: [...items] });
+      const stateQueue = createTaskQueue({ drop: true });
       try {
         for await (const item of iterable) {
           // Stop if another evaluator took over in the meantime (component update)
           if (this.pending[name] !== iterable)
             return false;
-          this.setState(({ [name]: items }) => ({ [name]: [...items, item] }));
+          items.push(item);
+          stateQueue.schedule(updateState);
         }
       }
-      // Ensure the evaluator is removed, even in case of errors
+      // Ensure pending updates are applied, and the evaluator is removed
       finally {
-        if (this.pending[name] === iterable)
+        const stateNeedsUpdate = stateQueue.clear();
+        if (this.pending[name] === iterable) {
+          if (stateNeedsUpdate)
+            updateState();
           delete this.pending[name];
+        }
       }
       return true;
     }

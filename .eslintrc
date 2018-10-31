@@ -143,7 +143,7 @@
     keyword-spacing: error,
     line-comment-position: off,
     linebreak-style: error,
-    lines-around-comment: error,
+    lines-around-comment: [ error, { allowObjectStart: true } ],
     lines-between-class-members: error,
     max-depth: error,
     max-len: off,
