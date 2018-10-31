@@ -57,13 +57,21 @@ export default function evaluateExpressions(valueProps, listProps, Component) {
 
     /** Evaluates the property expressions into the state. */
     async evaluateExpressions(values, lists) {
-      this.setState({ pending: true });
-
-      // Create evaluators for each property and wait until they are done
+      // Create evaluators for each property, and mark them as pending
+      const pendingState = { pending: true };
       const evaluators = [
-        ...values.map(v => this.evaluateValueExpression(v)),
-        ...lists.map(l => this.evaluateListExpression(l)),
+        ...values.map(name => {
+          pendingState[name] = undefined;
+          return this.evaluateValueExpression(name);
+        }),
+        ...lists.map(name => {
+          pendingState[name] = [];
+          return this.evaluateListExpression(name);
+        }),
       ];
+      this.setState(pendingState);
+
+      // Wait until all evaluators are done (or one of them errors)
       try {
         await Promise.all(evaluators);
       }
@@ -87,8 +95,6 @@ export default function evaluateExpressions(valueProps, listProps, Component) {
 
     /** Evaluates the property expression as a singular value. */
     async evaluateValueExpression(name) {
-      this.setState({ [name]: undefined });
-
       // Obtain and await the promise
       const promise = this.resolveExpression(name, 'then');
       this.pending[name] = promise;
@@ -109,8 +115,6 @@ export default function evaluateExpressions(valueProps, listProps, Component) {
 
     /** Evaluates the property expression as a list. */
     async evaluateListExpression(name) {
-      this.setState({ [name]: [] });
-
       // Create the iterable
       const iterable = this.resolveExpression(name, Symbol.asyncIterator);
       if (!iterable)
