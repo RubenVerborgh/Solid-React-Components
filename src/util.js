@@ -29,24 +29,24 @@ export function getDisplayName(Component) {
  * Creates a task queue that enforces a minimum time between tasks.
  * Optionally, new tasks can cause any old ones to be dropped.
  */
-export function createTaskQueue({ timeBetween = 0, drop = false } = {}) {
+export function createTaskQueue({
+  drop = false,
+  timeBetween = 10,
+  concurrent = drop ? 1 : 4,
+} = {}) {
   let queue = [], scheduler = 0;
 
   // Runs all queued tasks, with the required minimum time in between
-  async function runQueuedTasks() {
-    if (queue.length === 0) {
-      scheduler = 0;
-    }
-    else {
-      scheduler = setTimeout(runQueuedTasks, timeBetween);
-      const { run, resolve, reject } = queue.shift();
+  function runQueuedTasks() {
+    scheduler = queue.length && setTimeout(runQueuedTasks, timeBetween);
+    queue.splice(0, concurrent).forEach(async ({ run, resolve, reject }) => {
       try {
         resolve(await run());
       }
       catch (error) {
         reject(error);
       }
-    }
+    });
   }
 
   return {
