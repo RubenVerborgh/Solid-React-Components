@@ -1,7 +1,7 @@
 {
   presets: [
-    ["@babel/react"],
-    ["@babel/env"],
+    ["@babel/react", { loose: true }],
+    ["@babel/env", { loose: true }],
   ],
   plugins: [
     ["@babel/plugin-proposal-class-properties"],
