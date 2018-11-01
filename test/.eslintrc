@@ -3,6 +3,7 @@
   rules: {
     callback-return: off,
     func-style: off,
+    new-cap: off,
     no-empty-function: off,
   },
 }

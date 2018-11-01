@@ -3,6 +3,8 @@ import withWebId from './withWebId';
 import { getDisplayName, createTaskQueue } from '../util';
 import data from '@solid/query-ldflex';
 
+const evaluatorQueue = createTaskQueue();
+
 /**
  * Higher-order component that evaluates LDflex expressions in properties
  * and passes their results to the wrapped component.
@@ -21,6 +23,7 @@ export default function evaluateExpressions(valueProps, listProps, Component) {
       super(props);
       this.state = { pending: true };
       this.pending = {};
+      this.cancel = false;
 
       this.valueProps = valueProps || [];
       this.valueProps.forEach(p => (this.state[p] = undefined));
@@ -59,16 +62,16 @@ export default function evaluateExpressions(valueProps, listProps, Component) {
     async evaluateExpressions(values, lists) {
       // Create evaluators for each property, and mark them as pending
       const pendingState = { pending: true };
-      const evaluators = [
+      const evaluators = evaluatorQueue.schedule([
         ...values.map(name => {
           pendingState[name] = undefined;
-          return this.evaluateValueExpression(name);
+          return () => !this.cancel && this.evaluateValueExpression(name);
         }),
         ...lists.map(name => {
           pendingState[name] = [];
-          return this.evaluateListExpression(name);
+          return () => !this.cancel && this.evaluateListExpression(name);
         }),
-      ];
+      ]);
       this.setState(pendingState);
 
       // Wait until all evaluators are done (or one of them errors)
@@ -123,23 +126,23 @@ export default function evaluateExpressions(valueProps, listProps, Component) {
 
       // Read the iterable
       const items = [];
-      const updateState = () => this.setState({ [name]: [...items] });
-      const stateQueue = createTaskQueue({ drop: true });
+      const update = () => this.cancel || this.setState({ [name]: [...items] });
+      const stateQueue = createTaskQueue({ timeBetween: 100, drop: true });
       try {
         for await (const item of iterable) {
           // Stop if another evaluator took over in the meantime (component update)
           if (this.pending[name] !== iterable)
             return false;
           items.push(item);
-          stateQueue.schedule(updateState);
+          stateQueue.schedule(update);
         }
       }
       // Ensure pending updates are applied, and the evaluator is removed
       finally {
-        const stateNeedsUpdate = stateQueue.clear();
+        const needsUpdate = stateQueue.clear();
         if (this.pending[name] === iterable) {
-          if (stateNeedsUpdate)
-            updateState();
+          if (needsUpdate)
+            update();
           delete this.pending[name];
         }
       }

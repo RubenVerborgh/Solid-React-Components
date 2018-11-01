@@ -1,8 +1,10 @@
 import React from 'react';
 import { List } from '../../src/';
 import { mount } from 'enzyme';
-import { asyncIterable, update } from '../util';
+import { asyncIterable, timers } from '../util';
 import data from '@solid/query-ldflex';
+
+jest.useFakeTimers();
 
 describe('A List', () => {
   describe('for an expression resulting in a list of size 0', () => {
@@ -23,8 +25,8 @@ describe('A List', () => {
 
     describe('after resolving', () => {
       beforeEach(async () => {
-        await iterable.resume();
-        list.update();
+        iterable.resume();
+        await timers(list);
       });
 
       it('renders the empty list', () => {
@@ -51,8 +53,8 @@ describe('A List', () => {
 
     describe('after resolving', () => {
       beforeEach(async () => {
-        await iterable.resume();
-        list.update();
+        iterable.resume();
+        await timers(list);
       });
 
       it('renders a element list of size 3', () => {
@@ -78,7 +80,7 @@ describe('A List', () => {
           {(item, i) => <span key={i}>{item}</span>}
         </List>
       );
-      await update(list);
+      await timers(list);
     });
     afterAll(() => list.unmount());
 
@@ -106,7 +108,7 @@ describe('A List', () => {
           {(item, i) => <span key={i}>{item}</span>}
         </List>
       );
-      await update(list);
+      await timers(list);
     });
     afterAll(() => list.unmount());
 
@@ -130,7 +132,7 @@ describe('A List', () => {
     beforeAll(async () => {
       data.resolve.mockReturnValue(iterable);
       list = mount(<List src="expr.items" offset="2" limit="3"/>);
-      await update(list);
+      await timers(list);
     });
     afterAll(() => list.unmount());
 
@@ -156,7 +158,7 @@ describe('A List', () => {
     beforeAll(async () => {
       data.resolve.mockReturnValue(iterable);
       list = mount(<List src="expr.items" filter={n => n % 2}/>);
-      await update(list);
+      await timers(list);
     });
     afterAll(() => list.unmount());
 

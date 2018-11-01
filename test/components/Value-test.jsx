@@ -1,9 +1,11 @@
 import React from 'react';
 import { Value } from '../../src/';
 import { mount } from 'enzyme';
-import { mockPromise, update, setProps } from '../util';
+import { mockPromise, update, setProps, timers } from '../util';
 import data from '@solid/query-ldflex';
 import auth from 'solid-auth-client';
+
+jest.useFakeTimers();
 
 describe('A Value', () => {
   describe('without expression', () => {
@@ -22,10 +24,11 @@ describe('A Value', () => {
 
   describe('with a string expression', () => {
     let field, expression;
-    beforeEach(() => {
+    beforeEach(async () => {
       expression = mockPromise();
       data.resolve.mockReturnValue(expression);
       field = mount(<Value src="user.firstname"/>);
+      await timers(field);
     });
     afterEach(() => field.unmount());
     const span = () => field.find('span').first();
@@ -153,9 +156,10 @@ describe('A Value', () => {
 
   describe('with a thenable', () => {
     let field, expression;
-    beforeEach(() => {
+    beforeEach(async () => {
       expression = mockPromise();
       field = mount(<Value src={expression}/>);
+      await timers(field);
     });
     afterEach(() => field.unmount());
 
@@ -186,7 +190,7 @@ describe('A Value', () => {
     describe('after the expression is evaluated', () => {
       beforeEach(async () => {
         await expression.resolve({ toString: () => 'contents' });
-        await update(field);
+        await timers(field);
       });
 
       it('contains the resolved contents', () => {
@@ -197,7 +201,7 @@ describe('A Value', () => {
     describe('after the expression evaluates to undefined', () => {
       beforeEach(async () => {
         await expression.resolve(undefined);
-        await update(field);
+        await timers(field);
       });
 
       it('renders the children', () => {

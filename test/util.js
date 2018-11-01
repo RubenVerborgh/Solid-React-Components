@@ -50,3 +50,8 @@ export async function setProps(component, props) {
   await new Promise(resolve => component.setProps(props, resolve));
   return immediate(component);
 }
+
+export async function timers(component) {
+  jest.runAllTimers();
+  return update(component);
+}

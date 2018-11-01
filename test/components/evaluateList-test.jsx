@@ -1,7 +1,9 @@
 import React from 'react';
 import { evaluateList } from '../../src/';
 import { mount } from 'enzyme';
-import { asyncIterable, update, setProps } from '../util';
+import { asyncIterable, setProps, timers } from '../util';
+
+jest.useFakeTimers();
 
 describe('An evaluateList wrapper', () => {
   const Wrapper = evaluateList('items', () => <span>contents</span>);
@@ -35,7 +37,7 @@ describe('An evaluateList wrapper', () => {
     });
 
     describe('after resolving', () => {
-      beforeAll(() => update(wrapper));
+      beforeAll(() => timers(wrapper));
 
       it('sets the property to the empty list', () => {
         expect(wrapped().props()).toHaveProperty('items', []);
@@ -72,7 +74,7 @@ describe('An evaluateList wrapper', () => {
     });
 
     describe('after resolving', () => {
-      beforeAll(() => update(wrapper));
+      beforeAll(() => timers(wrapper));
 
       it('sets the property to the items', () => {
         expect(wrapped().props()).toHaveProperty('items', ['a']);
@@ -109,7 +111,7 @@ describe('An evaluateList wrapper', () => {
     });
 
     describe('after resolving', () => {
-      beforeAll(() => update(wrapper));
+      beforeAll(() => timers(wrapper));
 
       it('sets the property to the items', () => {
         expect(wrapped().props()).toHaveProperty('items', ['a', 'b', 'c']);
@@ -146,7 +148,7 @@ describe('An evaluateList wrapper', () => {
     });
 
     describe('after resolving', () => {
-      beforeAll(() => update(wrapper));
+      beforeAll(() => timers(wrapper));
 
       it('sets the property to the items before the error', () => {
         expect(wrapped().props()).toHaveProperty('items', ['a', 'b']);
@@ -165,18 +167,15 @@ describe('An evaluateList wrapper', () => {
   describe('for an iterable that is replaced during iteration', () => {
     let wrapper, items;
     const wrapped = () => wrapper.childAt(0).childAt(0);
-    beforeEach(() => {
-      jest.useFakeTimers();
+    beforeEach(async () => {
       items = asyncIterable('a', 'b', undefined, 'c', 'd');
       wrapper = mount(<Wrapper items={items}/>);
+      await timers(wrapper);
     });
     afterEach(() => wrapper.unmount());
 
     describe('before replacing', () => {
-      beforeEach(async () => {
-        jest.runAllTimers();
-        await update(wrapper);
-      });
+      beforeEach(() => timers(wrapper));
 
       it('sets the property to the items so far', () => {
         expect(wrapped().props()).toHaveProperty('items', ['a', 'b']);
@@ -196,8 +195,8 @@ describe('An evaluateList wrapper', () => {
       beforeEach(async () => {
         newItems = asyncIterable('x', 'y', undefined, 'z');
         await setProps(wrapper, { items: newItems });
-        jest.runAllTimers();
-        await update(wrapper);
+        await items.resume();
+        await timers(wrapper);
       });
 
       describe('while the replacement is iterating', () => {
@@ -217,7 +216,7 @@ describe('An evaluateList wrapper', () => {
       describe('after the replacement is done iterating', () => {
         beforeEach(async () => {
           await newItems.resume();
-          await update(wrapper);
+          await timers(wrapper);
         });
 
         it('sets the property to all items', () => {

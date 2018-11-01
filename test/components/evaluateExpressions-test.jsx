@@ -1,9 +1,11 @@
 import React from 'react';
 import { evaluateExpressions } from '../../src/';
 import { mount, render } from 'enzyme';
-import { mockPromise, update, setProps } from '../util';
+import { mockPromise, setProps, timers } from '../util';
 import data from '@solid/query-ldflex';
 import auth from 'solid-auth-client';
+
+jest.useFakeTimers();
 
 describe('An evaluateExpressions wrapper', () => {
   const Wrapper = evaluateExpressions(['foo', 'bar'], () => <span>contents</span>);
@@ -31,7 +33,7 @@ describe('An evaluateExpressions wrapper', () => {
   it('accepts empty properties', async () => {
     const Component = evaluateExpressions(['a'], ['b'], () => null);
     const component = mount(<Component/>);
-    await update(component);
+    await timers(component);
 
     const inner = component.childAt(0).childAt(0);
     expect(inner.props()).toHaveProperty('error', undefined);
@@ -41,7 +43,7 @@ describe('An evaluateExpressions wrapper', () => {
   it('errors on invalid expression types', async () => {
     const Component = evaluateExpressions(['a'], () => null);
     const component = mount(<Component a={1234}/>);
-    await update(component);
+    await timers(component);
 
     const inner = component.childAt(0).childAt(0);
     expect(inner.props()).toHaveProperty('error',
@@ -50,6 +52,10 @@ describe('An evaluateExpressions wrapper', () => {
   });
 
   describe('before properties are resolved', () => {
+    beforeEach(async () => {
+      await timers(wrapper);
+    });
+
     it('passes the first property as undefined', () => {
       expect(wrapped().props()).toHaveProperty('foo', undefined);
     });
@@ -81,7 +87,7 @@ describe('An evaluateExpressions wrapper', () => {
         newBar = mockPromise();
         data.resolve.mockReturnValue(newBar);
         await setProps(wrapper, { bar: 'user.newBar' });
-        await update(wrapper);
+        await timers(wrapper);
       });
 
       it('passes the second property as undefined', () => {
@@ -127,7 +133,7 @@ describe('An evaluateExpressions wrapper', () => {
   describe('after the first property resolves', () => {
     beforeEach(async () => {
       await foo.resolve('first');
-      wrapper.update();
+      await timers(wrapper);
     });
 
     it('passes the first property value', () => {
@@ -156,7 +162,7 @@ describe('An evaluateExpressions wrapper', () => {
         newBar = mockPromise();
         data.resolve.mockReturnValue(newBar);
         await setProps(wrapper, { bar: 'user.newBar' });
-        await update(wrapper);
+        await timers(wrapper);
       });
 
       it('passes the second property as undefined', () => {
@@ -201,8 +207,9 @@ describe('An evaluateExpressions wrapper', () => {
 
   describe('after the first property errors', () => {
     beforeEach(async () => {
-      await foo.reject(new Error('error'));
-      wrapper.update();
+      await timers(wrapper);
+      foo.reject(new Error('error'));
+      await timers(wrapper);
     });
 
     it('passes the first property as undefined', () => {
@@ -225,7 +232,7 @@ describe('An evaluateExpressions wrapper', () => {
   describe('after the second property resolves', () => {
     beforeEach(async () => {
       await bar.resolve('second');
-      wrapper.update();
+      await timers(wrapper);
     });
 
     it('passes the first property as undefined', () => {
@@ -243,8 +250,9 @@ describe('An evaluateExpressions wrapper', () => {
 
   describe('after the second property errors', () => {
     beforeEach(async () => {
-      await bar.reject(new Error('error'));
-      wrapper.update();
+      await timers(wrapper);
+      bar.reject(new Error('error'));
+      await timers(wrapper);
     });
 
     it('passes the first property as undefined', () => {
@@ -268,7 +276,7 @@ describe('An evaluateExpressions wrapper', () => {
     beforeEach(async () => {
       await foo.resolve('first');
       await bar.resolve('second');
-      wrapper.update();
+      await timers(wrapper);
     });
 
     it('passes the first property value', () => {
@@ -309,7 +317,9 @@ describe('An evaluateExpressions wrapper', () => {
       });
 
       describe('after both properties resolve', () => {
-        beforeEach(() => update(wrapper));
+        beforeEach(async () => {
+          await timers(wrapper);
+        });
 
         it('passes the same first property value', () => {
           expect(wrapped().props()).toHaveProperty('foo', 'first');
