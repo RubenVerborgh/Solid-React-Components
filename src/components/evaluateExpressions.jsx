@@ -56,6 +56,7 @@ export default function evaluateExpressions(valueProps, listProps, Component) {
       // Avoid state updates from pending evaluators
       this.pending = {};
       this.cancel = true;
+      evaluatorQueue.clear(this);
     }
 
     /** Evaluates the property expressions into the state. */
@@ -65,13 +66,13 @@ export default function evaluateExpressions(valueProps, listProps, Component) {
       const evaluators = evaluatorQueue.schedule([
         ...values.map(name => {
           pendingState[name] = undefined;
-          return () => !this.cancel && this.evaluateValueExpression(name);
+          return () => this.evaluateValueExpression(name);
         }),
         ...lists.map(name => {
           pendingState[name] = [];
-          return () => !this.cancel && this.evaluateListExpression(name);
+          return () => this.evaluateListExpression(name);
         }),
-      ]);
+      ], this);
       this.setState(pendingState);
 
       // Wait until all evaluators are done (or one of them errors)

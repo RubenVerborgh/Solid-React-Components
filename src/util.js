@@ -51,7 +51,7 @@ export function createTaskQueue({
 
   return {
     /** Schedules the given task(s) */
-    schedule: function schedule(functions) {
+    schedule: function schedule(functions, group = null) {
       // Schedule a single task
       if (!Array.isArray(functions))
         return schedule([functions])[0];
@@ -60,7 +60,7 @@ export function createTaskQueue({
       const tasks = [];
       const results = functions.map(run =>
         new Promise((resolve, reject) =>
-          tasks.push({ run, resolve, reject })));
+          tasks.push({ run, resolve, reject, group })));
 
       // Schedule the tasks
       if (drop)
@@ -72,11 +72,11 @@ export function createTaskQueue({
       return results;
     },
 
-    /** Forgets pending tasks.
+    /** Forgets pending tasks (optionally only those in a given group).
         Returns a boolean indicating whether there were any. */
-    clear: function () {
+    clear: function (group) {
       const hadPendingTasks = queue.length > 0;
-      queue = [];
+      queue = queue.filter(task => group !== undefined && task.group !== group);
       return hadPendingTasks;
     },
   };
