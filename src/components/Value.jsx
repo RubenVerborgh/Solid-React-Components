@@ -1,9 +1,8 @@
 import React from 'react';
-import PropTypes from './prop-types';
 import evaluateExpressions from './evaluateExpressions';
 
 /** Displays the value of a Solid LDflex expression. */
-const Value = evaluateExpressions(['src'], function Value({
+export default evaluateExpressions(['src'], function Value({
   pending, error, src, children,
 }) {
   // Render pending state
@@ -18,9 +17,3 @@ const Value = evaluateExpressions(['src'], function Value({
   // Render stringified value
   return `${src}`;
 });
-export default Value;
-
-Value.propTypes = {
-  src: PropTypes.LDflex.isRequired,
-  children: PropTypes.children,
-};

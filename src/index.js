@@ -5,9 +5,9 @@ import evaluateList from './components/evaluateList';
 import LoggedIn from './components/LoggedIn';
 import LoggedOut from './components/LoggedOut';
 
-import AuthButton from './components/AuthButton';
 import LoginButton from './components/LoginButton';
 import LogoutButton from './components/LogoutButton';
+import AuthButton from './components/AuthButton';
 
 import Value from './components/Value';
 import Image from './components/Image';
@@ -17,6 +17,8 @@ import Name from './components/Name';
 
 import List from './components/List';
 
+import './prop-types';
+
 export {
   withWebId,
   evaluateExpressions,
@@ -25,9 +27,9 @@ export {
   LoggedIn,
   LoggedOut,
 
-  AuthButton,
   LoginButton,
   LogoutButton,
+  AuthButton,
 
   Value,
   Image,
