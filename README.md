@@ -94,10 +94,10 @@ For example:
 <List src="[https://ruben.verborgh.org/profile/#me].friends.firstName"/>
 
 <h2>Random blog post</h2>
-<Link href="[https://ruben.verborgh.org/profile/#me].blog[http://schema.org/blogPost]"/>
+<Link href="[https://ruben.verborgh.org/profile/#me].blog[schema:blogPost]"/>
 
 <h2>All blog posts</h2>
-<List src="[https://ruben.verborgh.org/profile/#me].blog[http://schema.org/blogPost].label"/>
+<List src="[https://ruben.verborgh.org/profile/#me].blog[schema:blogPost].label"/>
 
 ```
 
