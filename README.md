@@ -1,6 +1,6 @@
 # React for Solid
-Efficiently build [Solid](https://solid.inrupt.com/) apps and components
-with [React](https://reactjs.org/)
+Basic [React](https://reactjs.org/) components
+for building your own [Solid](https://solid.inrupt.com/) components and apps.
 
 [![npm version](https://img.shields.io/npm/v/@solid/react.svg)](https://www.npmjs.com/package/@solid/react)
 [![Build Status](https://travis-ci.org/solid/react-components.svg?branch=master)](https://travis-ci.org/solid/react-components)
@@ -10,9 +10,6 @@ with [React](https://reactjs.org/)
 🚧 Work in progress:
 you currently get components to _read_ data.
 Writing is still underway.
-
-⚠️ This library explores one way of developing Solid apps,
-but does not aim to be _the_ way or the _only_ way.
 
 ## Purpose
 ✨ [Solid](https://solid.inrupt.com/) is an ecosystem for people, data, and apps
