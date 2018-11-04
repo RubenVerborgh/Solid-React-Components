@@ -76,6 +76,8 @@ For example:
 - `"[https://ruben.verborgh.org/profile/#me].homepage"` will resolve to Ruben's homepage
 - `"[https://ruben.verborgh.org/profile/#me].friends.firstName"` will resolve to Ruben's friends' names
 
+Learn how to [write your own LDflex expressions](https://github.com/solid/query-ldflex/#creating-data-paths).
+
 #### Data components
 ```jsx
 <LoggedIn>
