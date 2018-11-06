@@ -62,7 +62,7 @@ export default function evaluateExpressions(valueProps, listProps, Component) {
     /** Evaluates the property expressions into the state. */
     async evaluateExpressions(values, lists) {
       // Create evaluators for each property, and mark them as pending
-      const pendingState = { pending: true };
+      const pendingState = { error: undefined, pending: true };
       const evaluators = evaluatorQueue.schedule([
         ...values.map(name => {
           pendingState[name] = undefined;

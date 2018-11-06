@@ -227,6 +227,43 @@ describe('An evaluateExpressions wrapper', () => {
     it('sets the error', () => {
       expect(wrapped().props()).toHaveProperty('error', new Error('error'));
     });
+
+    describe('after the first property changes', () => {
+      let newFoo;
+      beforeEach(async () => {
+        newFoo = mockPromise();
+        data.resolve.mockReturnValue(newFoo);
+        await setProps(wrapper, { foo: 'user.newFoo' });
+        await timers(wrapper);
+      });
+
+      it('sets error to undefined', () => {
+        expect(wrapped().props()).toHaveProperty('error', undefined);
+      });
+
+      it('passes the first property as undefined', () => {
+        expect(wrapped().props()).toHaveProperty('foo', undefined);
+      });
+
+      it('resolves the string expression', () => {
+        expect(data.resolve).toHaveBeenLastCalledWith('user.newFoo');
+      });
+
+      describe('after the new first property resolves without error', () => {
+        beforeEach(async () => {
+          await newFoo.resolve('new first');
+          wrapper.update();
+        });
+
+        it('has the new first property value', () => {
+          expect(wrapped().props()).toHaveProperty('foo', 'new first');
+        });
+
+        it('sets error to undefined', () => {
+          expect(wrapped().props()).toHaveProperty('error', undefined);
+        });
+      });
+    });
   });
 
   describe('after the second property resolves', () => {
