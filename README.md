@@ -187,22 +187,6 @@ const Greetings = evaluateList('people', ({ people, greeting }) =>
 <Greetings people="user.friends" greeting="Hello"/>
 ```
 
-### Configuring webpack
-When using webpack to create a distribution that includes `@solid/react`,
-ensure that browser versions of dependencies are not included.
-In your webpack configuration file, set:
-
-```JavaScript
-module.exports = {
-  // ...
-  externals: require('@solid/react/webpack/webpack.bundle.config').externals,
-  // ...
-};
-```
-
-If you are using _Create React App_,
-you might need to `npm run eject` to expose your webpack config.
-
 ## License
 ©2018–present [Ruben Verborgh](https://ruben.verborgh.org/),
 [MIT License](https://github.com/solid/react-components/blob/master/LICENSE.md).
