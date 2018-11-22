@@ -25,6 +25,13 @@ so people's data from all over the Web can be connected together
 instead of needing to be stored in one giant space.
 This library makes working with Linked Data easier, too.
 
+## Example apps
+These apps have already been built with React for Solid:
+- [Profile viewer](https://github.com/solid/profile-viewer-react) 👤
+- [LDflex playground](https://solid.github.io/ldflex-playground/) ⚾
+- [Demo app](https://github.com/solid/react-components/blob/master/demo/app.jsx) 🔍
+- […add yours!](https://github.com/solid/react-components/edit/master/README.md)
+
 ## Installation and usage
 First add the package:
 ```bash
