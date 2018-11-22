@@ -66,7 +66,7 @@ You will need a copy of [popup.html](https://solid.github.io/solid-auth-client/d
 <LoginButton popup="popup.html"/>
 <LogoutButton/>
 // Shows LoginButton or LogoutButton depending on the user's status
-<AuthButton/>
+<AuthButton popup="popup.html"/>
 ```
 
 ### 🖥️ Showing Solid data
