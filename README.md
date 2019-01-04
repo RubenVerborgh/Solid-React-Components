@@ -30,6 +30,7 @@ These apps have already been built with React for Solid:
 - [Profile viewer](https://github.com/solid/profile-viewer-react) 👤
 - [LDflex playground](https://solid.github.io/ldflex-playground/) ⚾
 - [Demo app](https://github.com/solid/react-components/blob/master/demo/app.jsx) 🔍
+- [Another profile viewer](https://gitlab.com/angelo-v/solid-profile-viewer) 👤
 - […add yours!](https://github.com/solid/react-components/edit/master/README.md)
 
 ## Installation and usage
