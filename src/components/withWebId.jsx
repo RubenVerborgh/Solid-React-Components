@@ -4,7 +4,7 @@ import { getDisplayName } from '../util';
 
 // Track all instances to inform them of WebID changes
 const instances = new Set();
-let state = { webId: null };
+let authState = { webId: null };
 
 /**
  * Higher-order component that passes the WebID of the logged-in user
@@ -14,9 +14,7 @@ export default function withWebId(Component) {
   return class WithWebID extends React.Component {
     static displayName = `WithWebId(${getDisplayName(Component)})`;
 
-    componentWillMount() {
-      this.setState(state);
-    }
+    state = authState;
 
     componentDidMount() {
       instances.add(this);
@@ -34,7 +32,7 @@ export default function withWebId(Component) {
 
 // Inform all instances when the WebID changes
 auth.trackSession(session => {
-  state = { webId: session && session.webId };
+  authState = { webId: session && session.webId };
   for (const instance of instances)
-    instance.setState(state);
+    instance.setState(authState);
 });
