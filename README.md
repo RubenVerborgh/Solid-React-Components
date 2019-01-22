@@ -138,8 +138,11 @@ which is a URL that points to them
 and leads to their data.
 
 By wrapping your component definition with `withWebId`,
-the `webId` property will automatically be set on your component's instances
+the user's WebID will automatically be set
+on the `webId` property of your component
 whenever the login status changes.
+If it is `undefined`, the login status is still loading;
+`null` signals the user is not logged in.
 
 ```jsx
 const MyComponent = withWebId(props =>

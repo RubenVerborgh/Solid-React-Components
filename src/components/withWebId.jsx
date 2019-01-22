@@ -4,7 +4,7 @@ import { getDisplayName } from '../util';
 
 // Track all instances to inform them of WebID changes
 const instances = new Set();
-let authState = { webId: null };
+let authState = { webId: undefined };
 
 /**
  * Higher-order component that passes the WebID of the logged-in user

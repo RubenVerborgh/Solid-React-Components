@@ -16,8 +16,8 @@ describe('A withWebId wrapper', () => {
       expect(wrapper.html()).toBe('<span>contents</span>');
     });
 
-    it('passes a webID of null to the wrapped component', () => {
-      expect(wrapper.childAt(0).props()).toHaveProperty('webId', null);
+    it('passes a webID of undefined to the wrapped component', () => {
+      expect(wrapper.childAt(0).props()).toHaveProperty('webId', undefined);
     });
 
     it('passes properties to the wrapped component', () => {

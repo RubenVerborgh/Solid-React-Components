@@ -3,7 +3,7 @@ import EventEmitter from 'events';
 class SolidAuthClient extends EventEmitter {
   constructor() {
     super();
-    this.session = null;
+    this.session = undefined;
   }
 
   popupLogin() {}
@@ -11,7 +11,8 @@ class SolidAuthClient extends EventEmitter {
   logout() {}
 
   trackSession(callback) {
-    callback(this.session);
+    if (this.session !== undefined)
+      callback(this.session);
     this.on('session', callback);
   }
 
