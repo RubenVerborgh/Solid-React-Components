@@ -64,9 +64,9 @@ will inspire you on how to use the components listed below.
 You will need a copy of [popup.html](https://solid.github.io/solid-auth-client/dist/popup.html) in your application folder.
 ```jsx
 <LoginButton popup="popup.html"/>
-<LogoutButton/>
+<LogoutButton>Log me out</LogoutButton>
 // Shows LoginButton or LogoutButton depending on the user's status
-<AuthButton popup="popup.html"/>
+<AuthButton popup="popup.html" login="Login here!" logout="Log me out"/>
 ```
 
 ### 🖥️ Showing Solid data

@@ -18,7 +18,7 @@ describe('A LogoutButton', () => {
     expect(button.hasClass('logout')).toBe(true);
   });
 
-  it('has "Log out" as text', () => {
+  it('has "Log out" as label', () => {
     expect(button.text()).toBe('Log out');
   });
 
@@ -27,5 +27,13 @@ describe('A LogoutButton', () => {
     button.simulate('click');
     expect(auth.logout).toBeCalledTimes(1);
     expect(auth.logout).toBeCalledWith();
+  });
+});
+
+describe('A LogoutButton with a string as child', () => {
+  const button = shallow(<LogoutButton>Goodbye</LogoutButton>);
+
+  it('has the string as label', () => {
+    expect(button.text()).toBe('Goodbye');
   });
 });

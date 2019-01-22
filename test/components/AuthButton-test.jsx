@@ -77,4 +77,26 @@ describe('An AuthButton', () => {
       });
     });
   });
+
+  describe('with custom labels', function () {
+    let button;
+    beforeEach(() => (button = mount(<AuthButton login="Hello" logout="Goodbye"/>)));
+    afterEach(() => button.unmount());
+
+    describe('when the user is not logged in', () => {
+      beforeAll(() => auth.mockWebId(null));
+
+      it('uses the custom login label', () => {
+        expect(button.text()).toBe('Hello');
+      });
+    });
+
+    describe('when the user is logged in', () => {
+      beforeAll(() => auth.mockWebId('https://example.org/#me'));
+
+      it('uses the custom logout label', () => {
+        expect(button.text()).toBe('Goodbye');
+      });
+    });
+  });
 });

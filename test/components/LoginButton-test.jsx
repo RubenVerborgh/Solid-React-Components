@@ -18,7 +18,7 @@ describe('A LoginButton', () => {
     expect(button.hasClass('login')).toBe(true);
   });
 
-  it('has "Log in" as text', () => {
+  it('has "Log in" as label', () => {
     expect(button.text()).toBe('Log in');
   });
 
@@ -27,5 +27,13 @@ describe('A LoginButton', () => {
     button.simulate('click');
     expect(auth.popupLogin).toBeCalledTimes(1);
     expect(auth.popupLogin).toBeCalledWith({ popupUri: 'popup.html' });
+  });
+});
+
+describe('A LoginButton with a string as child', () => {
+  const button = shallow(<LoginButton>Hello</LoginButton>);
+
+  it('has the string as label', () => {
+    expect(button.text()).toBe('Hello');
   });
 });
