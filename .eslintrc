@@ -4,7 +4,10 @@
     node: true,
   },
   extends: eslint:recommended,
-  plugins: [react],
+  plugins: [
+    react,
+    react-hooks,
+  ],
   parser: babel-eslint,
   parserOptions: {
     ecmaVersion: 2018,
@@ -209,5 +212,7 @@
     // React
     react/jsx-uses-react: error,
     react/jsx-uses-vars: error,
+    react-hooks/rules-of-hooks: error,
+    react-hooks/exhaustive-deps: error,
   }
 }
