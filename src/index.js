@@ -1,4 +1,6 @@
 import useWebId from './hooks/useWebId';
+import useLoggedIn from './hooks/useLoggedIn';
+import useLoggedOut from './hooks/useLoggedOut';
 
 import withWebId from './components/withWebId';
 import evaluateExpressions from './components/evaluateExpressions';
@@ -23,6 +25,8 @@ import './prop-types';
 
 export {
   useWebId,
+  useLoggedIn,
+  useLoggedOut,
 
   withWebId,
   evaluateExpressions,

@@ -2,8 +2,13 @@ import * as SolidReactComponents from '../src';
 
 describe('The SolidReactComponents module', () => {
   const exports = [
+    'useWebId',
+    'useLoggedIn',
+    'useLoggedOut',
+
     'withWebId',
     'evaluateExpressions',
+
     'LoggedIn',
     'LoggedOut',
     'LoginButton',
@@ -15,7 +20,6 @@ describe('The SolidReactComponents module', () => {
     'Label',
     'Name',
     'List',
-    'useWebId',
   ];
 
   exports.forEach(name => {
