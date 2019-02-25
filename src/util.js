@@ -1,4 +1,14 @@
 /**
+ * Returns an object with only the given keys from the source.
+ */
+export function pick(source, keys) {
+  const destination = {};
+  for (const key of keys)
+    destination[key] = source[key];
+  return destination;
+}
+
+/**
  * Filters component properties that are safe to use in the DOM.
  */
 export function domProps(props = {}) {
