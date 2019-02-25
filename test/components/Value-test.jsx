@@ -1,6 +1,7 @@
 import React from 'react';
 import { Value } from '../../src/';
 import { mount } from 'enzyme';
+import { act } from 'react-dom/test-utils';
 import { mockPromise, update, setProps, timers } from '../util';
 import data from '@solid/query-ldflex';
 import auth from 'solid-auth-client';
@@ -146,7 +147,9 @@ describe('A Value', () => {
     });
 
     describe('after the user changes', () => {
-      beforeEach(() => auth.mockWebId('https://example.org/#me'));
+      beforeEach(() => !act(() => {
+        auth.mockWebId('https://example.org/#me');
+      }));
 
       it('re-evaluates the expression', () => {
         expect(data.resolve).toBeCalledTimes(2);
@@ -164,7 +167,9 @@ describe('A Value', () => {
     afterEach(() => field.unmount());
 
     describe('after the user changes', () => {
-      beforeEach(() => auth.mockWebId('https://example.org/#me'));
+      beforeEach(() => !act(() => {
+        auth.mockWebId('https://example.org/#me');
+      }));
 
       it('does not re-evaluate the expression', () => {
         expect(expression.then).toBeCalledTimes(1);

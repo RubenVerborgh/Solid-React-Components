@@ -1,3 +1,5 @@
+import useWebId from './hooks/useWebId';
+
 import withWebId from './components/withWebId';
 import evaluateExpressions from './components/evaluateExpressions';
 import evaluateList from './components/evaluateList';
@@ -20,6 +22,8 @@ import List from './components/List';
 import './prop-types';
 
 export {
+  useWebId,
+
   withWebId,
   evaluateExpressions,
   evaluateList,

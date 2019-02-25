@@ -1,6 +1,7 @@
 import React from 'react';
 import { evaluateExpressions } from '../../src/';
 import { mount, render } from 'enzyme';
+import { act } from 'react-dom/test-utils';
 import { mockPromise, setProps, timers } from '../util';
 import data from '@solid/query-ldflex';
 import auth from 'solid-auth-client';
@@ -333,7 +334,9 @@ describe('An evaluateExpressions wrapper', () => {
         bar = mockPromise();
         bar.resolve('second change');
         data.resolve.mockReturnValue(bar);
-        auth.mockWebId('https://example.org/#me');
+        act(() => {
+          auth.mockWebId('https://example.org/#me');
+        });
         wrapper.update();
       });
 

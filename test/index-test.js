@@ -15,6 +15,7 @@ describe('The SolidReactComponents module', () => {
     'Label',
     'Name',
     'List',
+    'useWebId',
   ];
 
   exports.forEach(name => {

@@ -26,6 +26,17 @@ export function getDisplayName(Component) {
 }
 
 /**
+ * Creates a higher-order component with the given name.
+ */
+export function higherOrderComponent(name, createWrapper) {
+  return Component => {
+    const Wrapper = createWrapper(Component);
+    Wrapper.displayName = `${name}(${getDisplayName(Component)})`;
+    return Wrapper;
+  };
+}
+
+/**
  * Creates a task queue that enforces a minimum time between tasks.
  * Optionally, new tasks can cause any old ones to be dropped.
  */

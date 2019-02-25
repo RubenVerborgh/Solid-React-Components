@@ -1,10 +1,12 @@
 import React from 'react';
 import { LoggedIn } from '../../src/';
 import { mount } from 'enzyme';
+import { act } from 'react-dom/test-utils';
 import auth from 'solid-auth-client';
 
 describe('A LoggedIn pane', () => {
   let pane;
+  beforeEach(() => pane.update());
 
   describe('with children', () => {
     beforeAll(() => {
@@ -13,31 +15,39 @@ describe('A LoggedIn pane', () => {
     afterAll(() => pane.unmount());
 
     describe('when the user is not logged in', () => {
-      beforeAll(() => auth.mockWebId(null));
+      beforeAll(() => !act(() => {
+        auth.mockWebId(null);
+      }));
 
       it('is empty', () => {
-        expect(pane.text()).toBe(null);
+        expect(pane.debug()).toBe('<LoggedIn />');
       });
     });
 
     describe('when the user is logged in', () => {
-      beforeAll(() => auth.mockWebId('https://example.org/#me'));
+      beforeAll(() => !act(() => {
+        auth.mockWebId('https://example.org/#me');
+      }));
 
       it('renders the content', () => {
-        expect(pane.text()).toBe('Logged in');
+        expect(pane.debug()).toMatch(/Logged in/);
       });
     });
   });
 
   describe('without children', () => {
-    beforeAll(() => (pane = mount(<LoggedIn/>)));
+    beforeAll(() => !act(() => {
+      pane = mount(<LoggedIn/>);
+    }));
     afterAll(() => pane.unmount());
 
     describe('when the user is logged in', () => {
-      beforeAll(() => auth.mockWebId('https://example.org/#me'));
+      beforeAll(() => !act(() => {
+        auth.mockWebId('https://example.org/#me');
+      }));
 
       it('is empty', () => {
-        expect(pane.text()).toBe(null);
+        expect(pane.debug()).toBe('<LoggedIn />');
       });
     });
   });
