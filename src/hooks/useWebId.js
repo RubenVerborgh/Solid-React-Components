@@ -1,29 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useReducer, useEffect, useDebugValue } from 'react';
 import auth from 'solid-auth-client';
 
-// Keep track of the WebID and the state setters following it
-let webId;
-const setters = new Set();
+// Keep track of the WebID and the state setters tracking it
+let webId = undefined;
+const subscribers = new Set();
+const getWebId = (_, id) => id;
 
 /**
  * Returns the WebID (string) of the active user,
  * `null` if there is no user,
  * or `undefined` if the user state is pending.
  */
-export default function useWebId() {
-  const [, setWebId] = useState(webId);
+export default function useWebId(reducer = getWebId) {
+  const [result, updateWebId] = useReducer(reducer, webId, reducer);
+  useDebugValue(webId);
 
   useEffect(() => {
-    setters.add(setWebId);
-    return () => setters.delete(setWebId);
+    updateWebId(webId);
+    subscribers.add(updateWebId);
+    return () => subscribers.delete(updateWebId);
   }, []);
 
-  return webId;
+  return result;
 }
 
-// Inform all setters when the WebID changes
+// Inform subscribers when the WebID changes
 auth.trackSession(session => {
-  webId = session && session.webId;
-  for (const setter of setters)
-    setter(webId);
+  webId = session ? session.webId : null;
+  for (const subscriber of subscribers)
+    subscriber(webId);
 });

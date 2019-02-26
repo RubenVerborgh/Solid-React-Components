@@ -84,7 +84,6 @@ describe('An evaluateExpressions wrapper', () => {
     });
 
     it('resolves the string expression', () => {
-      expect(data.resolve).toHaveBeenCalledTimes(1);
       expect(data.resolve).toHaveBeenLastCalledWith('user.bar');
     });
 
@@ -331,10 +330,6 @@ describe('An evaluateExpressions wrapper', () => {
 
       it('sets pending to true', () => {
         expect(wrapped()).toHaveAttribute('data-pending', 'true');
-      });
-
-      it('re-evaluates the string expression', () => {
-        expect(data.resolve).toBeCalledTimes(2);
       });
 
       describe('after both properties resolve', () => {
