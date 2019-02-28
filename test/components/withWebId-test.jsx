@@ -1,30 +1,29 @@
 import React from 'react';
 import { withWebId } from '../../src/';
-import { mount } from 'enzyme';
-import { act } from 'react-dom/test-utils';
+import { act, render, cleanup } from 'react-testing-library';
 import auth from 'solid-auth-client';
 
 describe('A withWebId wrapper', () => {
-  const Wrapper = withWebId(() => <span>contents</span>);
-  let wrapper;
+  let container;
 
-  beforeAll(() => !act(() => {
-    wrapper = mount(<Wrapper foo="bar"/>);
-  }));
-  beforeEach(() => wrapper.update());
-  afterAll(() => wrapper.unmount());
+  beforeAll(() => {
+    const Wrapper = withWebId(({ foo, webId }) =>
+      <span data-foo={foo} data-webid={`${webId}`}>contents</span>);
+    ({ container } = render(<Wrapper foo="bar"/>));
+  });
+  afterAll(cleanup);
 
   describe('before a session is received', () => {
     it('renders the wrapped component', () => {
-      expect(wrapper.html()).toBe('<span>contents</span>');
+      expect(container).toHaveTextContent('contents');
     });
 
     it('passes a webID of undefined to the wrapped component', () => {
-      expect(wrapper.childAt(0).props()).toHaveProperty('webId', undefined);
+      expect(container.firstChild).toHaveAttribute('data-webId', 'undefined');
     });
 
     it('passes properties to the wrapped component', () => {
-      expect(wrapper.childAt(0).props()).toHaveProperty('foo', 'bar');
+      expect(container.firstChild).toHaveAttribute('data-foo', 'bar');
     });
   });
 
@@ -34,33 +33,34 @@ describe('A withWebId wrapper', () => {
     }));
 
     it('renders the wrapped component', () => {
-      expect(wrapper.html()).toBe('<span>contents</span>');
+      expect(container).toHaveTextContent('contents');
     });
 
     it('passes a webID of null to the wrapped component', () => {
-      expect(wrapper.childAt(0).props()).toHaveProperty('webId', null);
+      expect(container.firstChild).toHaveAttribute('data-webId', 'null');
     });
 
     it('passes properties to the wrapped component', () => {
-      expect(wrapper.childAt(0).props()).toHaveProperty('foo', 'bar');
+      expect(container.firstChild).toHaveAttribute('data-foo', 'bar');
     });
   });
 
   describe('when the user is logged in', () => {
+    const webId = 'https://example.org/#me';
     beforeAll(() => !act(() => {
-      auth.mockWebId('https://example.org/#me');
+      auth.mockWebId(webId);
     }));
 
     it('renders the wrapped component', () => {
-      expect(wrapper.html()).toBe('<span>contents</span>');
+      expect(container).toHaveTextContent('contents');
     });
 
     it("passes the user's webID to the wrapped component", () => {
-      expect(wrapper.childAt(0).props()).toHaveProperty('webId', 'https://example.org/#me');
+      expect(container.firstChild).toHaveAttribute('data-webId', webId);
     });
 
     it('passes properties to the wrapped component', () => {
-      expect(wrapper.childAt(0).props()).toHaveProperty('foo', 'bar');
+      expect(container.firstChild).toHaveAttribute('data-foo', 'bar');
     });
   });
 });

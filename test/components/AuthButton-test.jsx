@@ -1,101 +1,105 @@
 import React from 'react';
 import { AuthButton } from '../../src/';
-import { mount } from 'enzyme';
+import { act, render, cleanup } from 'react-testing-library';
 import auth from 'solid-auth-client';
 
 describe('An AuthButton', () => {
+  let container;
+  const button = () => container.firstChild;
+  afterAll(cleanup);
+
   describe('without properties', () => {
-    let button;
-    beforeEach(() => (button = mount(<AuthButton />)));
-    afterEach(() => button.unmount());
+    beforeAll(() => {
+      ({ container } = render(<AuthButton/>));
+    });
 
     describe('when the user is not logged in', () => {
-      beforeAll(() => auth.mockWebId(null));
+      beforeAll(() => !act(() => {
+        auth.mockWebId(null);
+      }));
 
       it('renders the login button', () => {
-        expect(button.text()).toBe('Log in');
+        expect(button()).toHaveTextContent('Log in');
       });
 
       it('uses default class names', () => {
-        expect(button.find('button').hasClass('solid')).toBe(true);
-        expect(button.find('button').hasClass('auth')).toBe(true);
-        expect(button.find('button').hasClass('login')).toBe(true);
-        expect(button.find('button').hasClass('logout')).toBe(false);
+        expect(button()).toHaveClass('solid', 'auth', 'login');
+        expect(button()).not.toHaveClass('logout');
       });
     });
 
     describe('when the user is logged in', () => {
-      beforeAll(() => auth.mockWebId('https://example.org/#me'));
+      beforeAll(() => !act(() => {
+        auth.mockWebId('https://example.org/#me');
+      }));
 
       it('renders the logout button', () => {
-        expect(button.text()).toBe('Log out');
+        expect(button()).toHaveTextContent('Log out');
       });
 
       it('uses default class names', () => {
-        expect(button.find('button').hasClass('solid')).toBe(true);
-        expect(button.find('button').hasClass('auth')).toBe(true);
-        expect(button.find('button').hasClass('login')).toBe(false);
-        expect(button.find('button').hasClass('logout')).toBe(true);
+        expect(button()).toHaveClass('solid', 'auth', 'logout');
+        expect(button()).not.toHaveClass('login');
       });
     });
   });
 
-  describe('with a className property', function () {
-    let button;
-    beforeEach(() => (button = mount(<AuthButton className="custom styling"/>)));
-    afterEach(() => button.unmount());
+  describe('with a className property', () => {
+    beforeAll(() => {
+      ({ container } = render(<AuthButton className="custom styling"/>));
+    });
 
     describe('when the user is not logged in', () => {
-      beforeAll(() => auth.mockWebId(null));
+      beforeAll(() => !act(() => {
+        auth.mockWebId(null);
+      }));
 
       it('does not use the built-in classes', () => {
-        expect(button.find('button').hasClass('solid')).toBe(false);
-        expect(button.find('button').hasClass('auth')).toBe(false);
-        expect(button.find('button').hasClass('login')).toBe(false);
-        expect(button.find('button').hasClass('logout')).toBe(false);
+        expect(button()).not.toHaveClass('solid', 'auth', 'logout');
       });
 
       it('uses the custom classes', () => {
-        expect(button.find('button').hasClass('custom')).toBe(true);
-        expect(button.find('button').hasClass('styling')).toBe(true);
+        expect(button()).toHaveClass('custom', 'styling');
       });
     });
 
     describe('when the user is logged in', () => {
-      beforeAll(() => auth.mockWebId('https://example.org/#me'));
+      beforeAll(() => !act(() => {
+        auth.mockWebId('https://example.org/#me');
+      }));
 
       it('does not use the built-in classes', () => {
-        expect(button.find('button').hasClass('solid')).toBe(false);
-        expect(button.find('button').hasClass('auth')).toBe(false);
-        expect(button.find('button').hasClass('login')).toBe(false);
-        expect(button.find('button').hasClass('logout')).toBe(false);
+        expect(button()).not.toHaveClass('solid', 'auth', 'logout');
       });
 
       it('uses the custom classes', () => {
-        expect(button.find('button').hasClass('custom')).toBe(true);
-        expect(button.find('button').hasClass('styling')).toBe(true);
+        expect(button()).toHaveClass('custom', 'styling');
       });
     });
   });
 
-  describe('with custom labels', function () {
-    let button;
-    beforeEach(() => (button = mount(<AuthButton login="Hello" logout="Goodbye"/>)));
-    afterEach(() => button.unmount());
+  describe('with custom labels', () => {
+    beforeAll(() => {
+      ({ container } = render(<AuthButton login="Hello" logout="Goodbye"/>));
+    });
 
     describe('when the user is not logged in', () => {
-      beforeAll(() => auth.mockWebId(null));
+      beforeAll(() => !act(() => {
+        auth.mockWebId(null);
+      }));
 
       it('uses the custom login label', () => {
-        expect(button.text()).toBe('Hello');
+        expect(button()).toHaveTextContent('Hello');
       });
     });
 
     describe('when the user is logged in', () => {
-      beforeAll(() => auth.mockWebId('https://example.org/#me'));
+      beforeAll(() => !act(() => {
+        auth.mockWebId('https://example.org/#me');
+      }));
 
       it('uses the custom logout label', () => {
-        expect(button.text()).toBe('Goodbye');
+        expect(button()).toHaveTextContent('Goodbye');
       });
     });
   });

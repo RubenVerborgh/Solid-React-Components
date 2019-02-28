@@ -1,39 +1,50 @@
 import React from 'react';
 import { LogoutButton } from '../../src/';
-import { shallow } from 'enzyme';
+import { render, fireEvent, cleanup } from 'react-testing-library';
 import auth from 'solid-auth-client';
 
 describe('A LogoutButton', () => {
-  const button = shallow(<LogoutButton/>);
+  let button;
+  afterAll(cleanup);
 
-  it('has the solid class', () => {
-    expect(button.hasClass('solid')).toBe(true);
+  describe('without attributes', () => {
+    beforeAll(() => {
+      const { container } = render(<LogoutButton/>);
+      button = container.firstChild;
+    });
+
+    it('has the solid class', () => {
+      expect(button).toHaveClass('solid');
+    });
+
+    it('has the auth class', () => {
+      expect(button).toHaveClass('auth');
+    });
+
+    it('has the logout class', () => {
+      expect(button).toHaveClass('logout');
+    });
+
+    it('has "Log out" as label', () => {
+      expect(button).toHaveTextContent('Log out');
+    });
+
+    it('logs the user out when clicked', () => {
+      expect(auth.logout).not.toBeCalled();
+      fireEvent.click(button);
+      expect(auth.logout).toBeCalledTimes(1);
+      expect(auth.logout).toBeCalledWith();
+    });
   });
 
-  it('has the auth class', () => {
-    expect(button.hasClass('auth')).toBe(true);
-  });
+  describe('with a string as child', () => {
+    beforeAll(() => {
+      const { container } = render(<LogoutButton>Goodbye</LogoutButton>);
+      button = container.firstChild;
+    });
 
-  it('has the logout class', () => {
-    expect(button.hasClass('logout')).toBe(true);
-  });
-
-  it('has "Log out" as label', () => {
-    expect(button.text()).toBe('Log out');
-  });
-
-  it('logs the user out when clicked', () => {
-    expect(auth.logout).not.toBeCalled();
-    button.simulate('click');
-    expect(auth.logout).toBeCalledTimes(1);
-    expect(auth.logout).toBeCalledWith();
-  });
-});
-
-describe('A LogoutButton with a string as child', () => {
-  const button = shallow(<LogoutButton>Goodbye</LogoutButton>);
-
-  it('has the string as label', () => {
-    expect(button.text()).toBe('Goodbye');
+    it('has the string as label', () => {
+      expect(button).toHaveTextContent('Goodbye');
+    });
   });
 });

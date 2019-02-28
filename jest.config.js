@@ -3,7 +3,7 @@ module.exports = {
   collectCoverageFrom: [
     "<rootDir>/src/**/*.(js|jsx)",
   ],
-  setupFiles: [
+  setupFilesAfterEnv: [
     "<rootDir>/test/setup.js",
   ],
   testMatch: [

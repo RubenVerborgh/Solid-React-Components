@@ -1,18 +1,16 @@
 import React from 'react';
 import { LoggedIn } from '../../src/';
-import { mount } from 'enzyme';
-import { act } from 'react-dom/test-utils';
+import { act, render, cleanup } from 'react-testing-library';
 import auth from 'solid-auth-client';
 
 describe('A LoggedIn pane', () => {
-  let pane;
-  beforeEach(() => pane.update());
+  let container;
+  afterAll(cleanup);
 
   describe('with children', () => {
     beforeAll(() => {
-      pane = mount(<LoggedIn>Logged in</LoggedIn>);
+      ({ container } = render(<LoggedIn>Logged in</LoggedIn>));
     });
-    afterAll(() => pane.unmount());
 
     describe('when the user is not logged in', () => {
       beforeAll(() => !act(() => {
@@ -20,7 +18,7 @@ describe('A LoggedIn pane', () => {
       }));
 
       it('is empty', () => {
-        expect(pane.debug()).toBe('<LoggedIn />');
+        expect(container.innerHTML).toBe('');
       });
     });
 
@@ -30,16 +28,15 @@ describe('A LoggedIn pane', () => {
       }));
 
       it('renders the content', () => {
-        expect(pane.debug()).toMatch(/Logged in/);
+        expect(container.innerHTML).toBe('Logged in');
       });
     });
   });
 
   describe('without children', () => {
-    beforeAll(() => !act(() => {
-      pane = mount(<LoggedIn/>);
-    }));
-    afterAll(() => pane.unmount());
+    beforeAll(() => {
+      ({ container } = render(<LoggedIn/>));
+    });
 
     describe('when the user is logged in', () => {
       beforeAll(() => !act(() => {
@@ -47,7 +44,7 @@ describe('A LoggedIn pane', () => {
       }));
 
       it('is empty', () => {
-        expect(pane.debug()).toBe('<LoggedIn />');
+        expect(container.innerHTML).toBe('');
       });
     });
   });

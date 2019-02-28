@@ -1,6 +1,6 @@
 import React from 'react';
 import { Name } from '../../src/';
-import { mount } from '../util';
+import { render, cleanup, waitForDomChange } from 'react-testing-library';
 import data from '@solid/query-ldflex';
 
 data.resolve.mockImplementation(async (path) => ({
@@ -8,15 +8,17 @@ data.resolve.mockImplementation(async (path) => ({
 })[path]);
 
 describe('Name', () => {
+  afterEach(cleanup);
+
   it('renders a name with src', async () => {
-    const name = await mount(<Name src="user"/>);
-    expect(name.text()).toBe('The User');
-    name.unmount();
+    const { container } = render(<Name src="user"/>);
+    await waitForDomChange();
+    expect(container).toHaveTextContent('The User');
   });
 
   it('renders a name with children', async () => {
-    const name = await mount(<Name src="other">default</Name>);
-    expect(name.text()).toBe('default');
-    name.unmount();
+    const { container } = render(<Name src="other">default</Name>);
+    await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
+    expect(container).toHaveTextContent('default');
   });
 });

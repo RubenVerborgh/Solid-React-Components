@@ -1,8 +1,5 @@
 /* eslint no-console: off */
-import { configure } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
-
-configure({ adapter: new Adapter() });
+import 'jest-dom/extend-expect';
 
 const warn = console.warn;
 console.warn = (...args) => {

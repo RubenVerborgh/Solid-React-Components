@@ -1,227 +1,188 @@
 import React from 'react';
 import { Value } from '../../src/';
-import { mount } from 'enzyme';
-import { act } from 'react-dom/test-utils';
-import { mockPromise, update, setProps, timers } from '../util';
+import { act, render, cleanup, waitForDomChange } from 'react-testing-library';
+import MockPromise from 'jest-mock-promise';
 import data from '@solid/query-ldflex';
 import auth from 'solid-auth-client';
 
-jest.useFakeTimers();
-
 describe('A Value', () => {
-  describe('without expression', () => {
-    let field;
-    beforeEach(async () => {
-      field = mount(<Value/>);
-      await update(field);
-    });
-    afterEach(() => field.unmount());
-
-    it('is the empty string', () => {
-      expect(field.find('span')).toHaveLength(0);
-      expect(field.text()).toBe('');
-    });
+  let container, expression, rerender;
+  const span = () => container.firstChild;
+  beforeEach(() => {
+    data.resolve.mockReturnValue(expression = new MockPromise());
   });
+  afterEach(cleanup);
 
   describe('with a string expression', () => {
-    let field, expression;
-    beforeEach(async () => {
-      expression = mockPromise();
-      data.resolve.mockReturnValue(expression);
-      field = mount(<Value src="user.firstname"/>);
-      await timers(field);
+    beforeEach(() => {
+      ({ container, rerender } = render(<Value src="user.firstname"/>));
     });
-    afterEach(() => field.unmount());
-    const span = () => field.find('span').first();
 
     describe('before the expression is evaluated', () => {
       it('is an empty span', () => {
-        expect(span().name()).toBe('span');
-        expect(span().text()).toBe('');
+        expect(span().tagName).toMatch(/^span$/i);
+        expect(span()).toHaveTextContent('');
       });
 
       it('has the solid class', () => {
-        expect(span().hasClass('solid')).toBe(true);
+        expect(span()).toHaveClass('solid');
       });
 
       it('has the value class', () => {
-        expect(span().hasClass('value')).toBe(true);
+        expect(span()).toHaveClass('value');
       });
 
       it('has the pending class', () => {
-        expect(span().hasClass('pending')).toBe(true);
-      });
-
-      it('starts resolving the expression', () => {
-        expect(data.resolve).toBeCalledTimes(1);
+        expect(span()).toHaveClass('pending');
       });
     });
 
     describe('after the expression is evaluated', () => {
       beforeEach(async () => {
-        await expression.resolve({ toString: () => 'contents' });
-        await update(field);
+        act(() => void expression.resolve({ toString: () => 'contents' }));
+        await waitForDomChange();
       });
 
       it('contains the resolved contents', () => {
-        expect(field.text()).toBe('contents');
+        expect(container.innerHTML).toBe('contents');
       });
     });
 
     describe('after the expression evaluates to undefined', () => {
       beforeEach(async () => {
-        await expression.resolve(undefined);
-        await update(field);
+        act(() => void expression.resolve(undefined));
+        await waitForDomChange();
       });
 
       it('is an empty span', () => {
-        expect(span().name()).toBe('span');
-        expect(span().text()).toBe('');
+        expect(span().tagName).toMatch(/^span$/i);
+        expect(span()).toHaveTextContent('');
       });
 
       it('has the solid class', () => {
-        expect(span().hasClass('solid')).toBe(true);
+        expect(span()).toHaveClass('solid');
       });
 
       it('has the value class', () => {
-        expect(span().hasClass('value')).toBe(true);
+        expect(span()).toHaveClass('value');
       });
 
       it('has the empty class', () => {
-        expect(span().hasClass('empty')).toBe(true);
+        expect(span()).toHaveClass('empty');
       });
     });
 
     describe('after the expression errors', () => {
       beforeEach(async () => {
-        await expression.reject(new Error('the error message'));
-        await update(field);
+        act(() => void expression.reject(new Error('the error message')));
+        await waitForDomChange();
       });
 
       it('is an empty span', () => {
-        expect(span().name()).toBe('span');
-        expect(span().text()).toBe('');
+        expect(span().tagName).toMatch(/^span$/i);
+        expect(span()).toHaveTextContent('');
       });
 
       it('has the error message in the data-error attribute', () => {
-        expect(span().prop('data-error')).toBe('the error message');
+        expect(span()).toHaveAttribute('data-error', 'the error message');
       });
 
       it('has the solid class', () => {
-        expect(span().hasClass('solid')).toBe(true);
+        expect(span()).toHaveClass('solid');
       });
 
       it('has the value class', () => {
-        expect(span().hasClass('value')).toBe(true);
+        expect(span()).toHaveClass('value');
       });
 
       it('has the error class', () => {
-        expect(span().hasClass('error')).toBe(true);
+        expect(span()).toHaveClass('error');
       });
     });
 
     describe('after src changes', () => {
-      let newExpression;
       beforeEach(async () => {
-        newExpression = mockPromise();
-        data.resolve.mockReturnValue(newExpression);
-        await setProps(field, { src: 'user.other' });
+        data.resolve.mockReturnValue(Promise.resolve('new contents'));
+        rerender(<Value src="user.other"/>);
+        await waitForDomChange();
       });
 
-      describe('before the expression is evaluated', () => {
-        it('starts resolving the expression', () => {
-          expect(newExpression.then).toBeCalledTimes(1);
-        });
-      });
-
-      describe('after the expression is evaluated', () => {
-        beforeEach(async () => {
-          await newExpression.resolve('new contents');
-          await update(field);
-        });
-
-        it('contains the resolved contents', () => {
-          expect(field.text()).toBe('new contents');
-        });
+      it('contains the resolved contents', () => {
+        expect(container).toHaveTextContent('new contents');
       });
     });
 
     describe('after the user changes', () => {
-      beforeEach(() => !act(() => {
-        auth.mockWebId('https://example.org/#me');
-      }));
+      beforeEach(async () => {
+        data.resolve.mockReturnValue(Promise.resolve('new user'));
+        act(() => void auth.mockWebId('https://example.org/#me'));
+        await waitForDomChange();
+      });
 
       it('re-evaluates the expression', () => {
-        expect(data.resolve).toBeCalledTimes(2);
+        expect(container).toHaveTextContent('new user');
       });
     });
   });
 
   describe('with a thenable', () => {
-    let field, expression;
-    beforeEach(async () => {
-      expression = mockPromise();
-      field = mount(<Value src={expression}/>);
-      await timers(field);
+    beforeEach(() => {
+      ({ container, rerender } = render(<Value src={new MockPromise()}/>));
     });
-    afterEach(() => field.unmount());
 
     describe('after the user changes', () => {
-      beforeEach(() => !act(() => {
-        auth.mockWebId('https://example.org/#me');
-      }));
+      beforeEach(async () => {
+        data.resolve.mockReturnValue(Promise.resolve('new user'));
+        act(() => void auth.mockWebId('https://example.org/#me'));
+      });
 
-      it('does not re-evaluate the expression', () => {
-        expect(expression.then).toBeCalledTimes(1);
+      it('does not re-evaluate the expression', async () => {
+        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
       });
     });
   });
 
   describe('with a string expression and children', () => {
-    let field, expression;
     beforeEach(() => {
-      expression = mockPromise();
-      data.resolve.mockReturnValue(expression);
-      field = mount(<Value src="user.firstname">children</Value>);
+      ({ container, rerender } = render(<Value src="user.firstname">children</Value>));
     });
-    afterEach(() => field.unmount());
 
     describe('before the expression is evaluated', () => {
       it('renders the children', () => {
-        expect(field.text()).toBe('children');
+        expect(container).toHaveTextContent('children');
       });
     });
 
     describe('after the expression is evaluated', () => {
       beforeEach(async () => {
-        await expression.resolve({ toString: () => 'contents' });
-        await timers(field);
+        act(() => void expression.resolve({ toString: () => 'contents' }));
+        await waitForDomChange();
       });
 
       it('contains the resolved contents', () => {
-        expect(field.text()).toBe('contents');
+        expect(container.innerHTML).toBe('contents');
       });
     });
 
     describe('after the expression evaluates to undefined', () => {
       beforeEach(async () => {
-        await expression.resolve(undefined);
-        await timers(field);
+        act(() => void expression.resolve(undefined));
+        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
       });
 
       it('renders the children', () => {
-        expect(field.text()).toBe('children');
+        expect(container).toHaveTextContent('children');
       });
     });
 
     describe('after the expression errors', () => {
       beforeEach(async () => {
-        await expression.reject(new Error('the error message'));
-        await update(field);
+        act(() => void expression.reject(new Error('the error message')));
+        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
       });
 
       it('renders the children', () => {
-        expect(field.text()).toBe('children');
+        expect(container).toHaveTextContent('children');
       });
     });
   });

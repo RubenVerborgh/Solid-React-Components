@@ -1,29 +1,36 @@
 import React from 'react';
 import { evaluateExpressions } from '../../src/';
-import { mount, render } from 'enzyme';
-import { act } from 'react-dom/test-utils';
-import { mockPromise, setProps, timers } from '../util';
+import { act, render, cleanup, wait, waitForDomChange } from 'react-testing-library';
+import MockPromise from 'jest-mock-promise';
 import data from '@solid/query-ldflex';
 import auth from 'solid-auth-client';
 
-jest.useFakeTimers();
-
 describe('An evaluateExpressions wrapper', () => {
-  const Wrapper = evaluateExpressions(['foo', 'bar'], () => <span>contents</span>);
-  let wrapper, foo, bar;
+  const Wrapper = evaluateExpressions(['foo', 'bar'], ({ foo, bar, pending, other, error }) =>
+    <span
+      data-foo={`${foo}`}
+      data-bar={`${bar}`}
+      data-pending={`${pending}`}
+      data-other={`${other}`}
+      data-error={`${error}`}>contents</span>
+  );
+  let container, foo, bar, rerender;
+  const wrapped = () => container.firstChild;
 
   beforeEach(() => {
-    foo = mockPromise();
-    bar = mockPromise();
+    foo = new MockPromise();
+    bar = new MockPromise();
+    jest.spyOn(foo, 'then');
+    jest.spyOn(bar, 'then');
     auth.mockWebId(null);
     data.resolve.mockReturnValue(bar);
-    wrapper = mount(<Wrapper foo={foo} bar="user.bar" other="value" />);
+    const wrapper = <Wrapper foo={foo} bar="user.bar" other="value" />;
+    ({ container, rerender } = render(wrapper));
   });
-  afterEach(() => wrapper.unmount());
-  const wrapped = () => wrapper.childAt(0).childAt(0);
+  afterEach(cleanup);
 
   it('renders the wrapped component', () => {
-    expect(wrapper.html()).toBe('<span>contents</span>');
+    expect(container).toHaveTextContent('contents');
   });
 
   it('accepts null as valueProps and listProps', () => {
@@ -32,49 +39,48 @@ describe('An evaluateExpressions wrapper', () => {
   });
 
   it('accepts empty properties', async () => {
-    const Component = evaluateExpressions(['a'], ['b'], () => null);
-    const component = mount(<Component/>);
-    await timers(component);
+    const Component = evaluateExpressions(['a'], ['b'],
+      ({ error }) => <span data-error={`${error}`}/>);
+    ({ container } = render(<Component/>));
+    await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
 
-    const inner = component.childAt(0).childAt(0);
-    expect(inner.props()).toHaveProperty('error', undefined);
-    component.unmount();
+    expect(wrapped()).toHaveAttribute('data-error', 'undefined');
   });
 
   it('errors on invalid expression types', async () => {
-    const Component = evaluateExpressions(['a'], () => null);
-    const component = mount(<Component a={1234}/>);
-    await timers(component);
+    const Component = evaluateExpressions(['a'], ({ error }) => `${error}`);
+    ({ container } = render(<Component a={1234}/>));
+    await waitForDomChange();
 
-    const inner = component.childAt(0).childAt(0);
-    expect(inner.props()).toHaveProperty('error',
-      new Error('a should be an LDflex path or string but is 1234'));
-    component.unmount();
+    expect(container).toHaveTextContent(
+      'Error: a should be an LDflex path or string but is 1234');
   });
 
   describe('before properties are resolved', () => {
     beforeEach(async () => {
-      await timers(wrapper);
+      await wait(() => {
+        expect(data.resolve).toHaveBeenCalled();
+      });
     });
 
     it('passes the first property as undefined', () => {
-      expect(wrapped().props()).toHaveProperty('foo', undefined);
+      expect(wrapped()).toHaveAttribute('data-foo', 'undefined');
     });
 
     it('passes the second property as undefined', () => {
-      expect(wrapped().props()).toHaveProperty('bar', undefined);
+      expect(wrapped()).toHaveAttribute('data-bar', 'undefined');
     });
 
     it('sets pending to true', () => {
-      expect(wrapped().props()).toHaveProperty('pending', true);
+      expect(wrapped()).toHaveAttribute('data-pending', 'true');
     });
 
     it('sets error to undefined', () => {
-      expect(wrapped().props()).toHaveProperty('error', undefined);
+      expect(wrapped()).toHaveAttribute('data-error', 'undefined');
     });
 
     it('passes other properties to the wrapped component', () => {
-      expect(wrapped().props()).toHaveProperty('other', 'value');
+      expect(wrapped()).toHaveAttribute('data-other', 'value');
     });
 
     it('resolves the string expression', () => {
@@ -85,47 +91,39 @@ describe('An evaluateExpressions wrapper', () => {
     describe('after the second property changes', () => {
       let newBar;
       beforeEach(async () => {
-        newBar = mockPromise();
+        newBar = new MockPromise();
         data.resolve.mockReturnValue(newBar);
-        await setProps(wrapper, { bar: 'user.newBar' });
-        await timers(wrapper);
+        const wrapper = <Wrapper foo={foo} bar="user.newBar" other="value" />;
+        rerender(wrapper);
       });
 
       it('passes the second property as undefined', () => {
-        expect(wrapped().props()).toHaveProperty('bar', undefined);
-      });
-
-      it('resolves the string expression', () => {
-        expect(data.resolve).toHaveBeenLastCalledWith('user.newBar');
+        expect(wrapped()).toHaveAttribute('data-bar', 'undefined');
       });
 
       describe('after the original second property resolves', () => {
         beforeEach(async () => {
           await bar.resolve('second');
-          wrapper.update();
-        });
-
-        it('passes the second property as undefined', () => {
-          expect(wrapped().props()).toHaveProperty('bar', undefined);
+          await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
         });
 
         it('sets pending to true', () => {
-          expect(wrapped().props()).toHaveProperty('pending', true);
+          expect(wrapped()).toHaveAttribute('data-pending', 'true');
         });
       });
 
       describe('after the new second property resolves', () => {
         beforeEach(async () => {
-          await newBar.resolve('new second');
-          wrapper.update();
+          newBar.resolve('new second');
+          await waitForDomChange();
         });
 
-        it('still has the new second property value', () => {
-          expect(wrapped().props()).toHaveProperty('bar', 'new second');
+        it('has the new second property value', () => {
+          expect(wrapped()).toHaveAttribute('data-bar', 'new second');
         });
 
         it('sets pending to true', () => {
-          expect(wrapped().props()).toHaveProperty('pending', true);
+          expect(wrapped()).toHaveAttribute('data-pending', 'true');
         });
       });
     });
@@ -133,74 +131,61 @@ describe('An evaluateExpressions wrapper', () => {
 
   describe('after the first property resolves', () => {
     beforeEach(async () => {
-      await foo.resolve('first');
-      await timers(wrapper);
+      foo.resolve('first');
+      await waitForDomChange();
     });
 
     it('passes the first property value', () => {
-      expect(wrapped().props()).toHaveProperty('foo', 'first');
+      expect(wrapped()).toHaveAttribute('data-foo', 'first');
     });
 
     it('passes the second property as undefined', () => {
-      expect(wrapped().props()).toHaveProperty('bar', undefined);
+      expect(wrapped()).toHaveAttribute('data-bar', 'undefined');
     });
 
     it('sets pending to true', () => {
-      expect(wrapped().props()).toHaveProperty('pending', true);
-    });
-
-    it('starts resolving the first property', () => {
-      expect(foo.then).toHaveBeenCalledTimes(1);
-    });
-
-    it('starts resolving the second property', () => {
-      expect(bar.then).toHaveBeenCalledTimes(1);
+      expect(wrapped()).toHaveAttribute('data-pending', 'true');
     });
 
     describe('after the second property changes', () => {
       let newBar;
       beforeEach(async () => {
-        newBar = mockPromise();
+        newBar = new MockPromise();
         data.resolve.mockReturnValue(newBar);
-        await setProps(wrapper, { bar: 'user.newBar' });
-        await timers(wrapper);
+        const wrapper = <Wrapper foo={foo} bar="user.newBar" other="value" />;
+        rerender(wrapper);
       });
 
       it('passes the second property as undefined', () => {
-        expect(wrapped().props()).toHaveProperty('bar', undefined);
-      });
-
-      it('resolves the string expression', () => {
-        expect(data.resolve).toHaveBeenLastCalledWith('user.newBar');
+        expect(wrapped()).toHaveAttribute('data-bar', 'undefined');
       });
 
       describe('after the original second property resolves', () => {
         beforeEach(async () => {
           await bar.resolve('second');
-          wrapper.update();
         });
 
         it('passes the second property as undefined', () => {
-          expect(wrapped().props()).toHaveProperty('bar', undefined);
+          expect(wrapped()).toHaveAttribute('data-bar', 'undefined');
         });
 
         it('sets pending to true', () => {
-          expect(wrapped().props()).toHaveProperty('pending', true);
+          expect(wrapped()).toHaveAttribute('data-pending', 'true');
         });
       });
 
       describe('after the new second property resolves', () => {
         beforeEach(async () => {
           await newBar.resolve('new second');
-          wrapper.update();
+          await waitForDomChange();
         });
 
         it('still has the new second property value', () => {
-          expect(wrapped().props()).toHaveProperty('bar', 'new second');
+          expect(wrapped()).toHaveAttribute('data-bar', 'new second');
         });
 
         it('sets pending to false', () => {
-          expect(wrapped().props()).toHaveProperty('pending', false);
+          expect(wrapped()).toHaveAttribute('data-pending', 'false');
         });
       });
     });
@@ -208,42 +193,41 @@ describe('An evaluateExpressions wrapper', () => {
 
   describe('after the first property errors', () => {
     beforeEach(async () => {
-      await timers(wrapper);
       foo.reject(new Error('error'));
-      await timers(wrapper);
+      await waitForDomChange();
     });
 
     it('passes the first property as undefined', () => {
-      expect(wrapped().props()).toHaveProperty('foo', undefined);
+      expect(wrapped()).toHaveAttribute('data-foo', 'undefined');
     });
 
     it('passes the second property as undefined', () => {
-      expect(wrapped().props()).toHaveProperty('bar', undefined);
+      expect(wrapped()).toHaveAttribute('data-bar', 'undefined');
     });
 
     it('sets pending to true', () => {
-      expect(wrapped().props()).toHaveProperty('pending', true);
+      expect(wrapped()).toHaveAttribute('data-pending', 'true');
     });
 
     it('sets the error', () => {
-      expect(wrapped().props()).toHaveProperty('error', new Error('error'));
+      expect(wrapped()).toHaveAttribute('data-error', 'Error: error');
     });
 
     describe('after the first property changes', () => {
       let newFoo;
       beforeEach(async () => {
-        newFoo = mockPromise();
+        newFoo = new MockPromise();
         data.resolve.mockReturnValue(newFoo);
-        await setProps(wrapper, { foo: 'user.newFoo' });
-        await timers(wrapper);
+        const wrapper = <Wrapper foo="user.newFoo" bar="user.bar" other="value" />;
+        rerender(wrapper);
       });
 
       it('sets error to undefined', () => {
-        expect(wrapped().props()).toHaveProperty('error', undefined);
+        expect(wrapped()).toHaveAttribute('data-error', 'undefined');
       });
 
       it('passes the first property as undefined', () => {
-        expect(wrapped().props()).toHaveProperty('foo', undefined);
+        expect(wrapped()).toHaveAttribute('data-foo', 'undefined');
       });
 
       it('resolves the string expression', () => {
@@ -252,16 +236,16 @@ describe('An evaluateExpressions wrapper', () => {
 
       describe('after the new first property resolves without error', () => {
         beforeEach(async () => {
-          await newFoo.resolve('new first');
-          wrapper.update();
+          newFoo.resolve('new first');
+          await waitForDomChange();
         });
 
         it('has the new first property value', () => {
-          expect(wrapped().props()).toHaveProperty('foo', 'new first');
+          expect(wrapped()).toHaveAttribute('data-foo', 'new first');
         });
 
         it('sets error to undefined', () => {
-          expect(wrapped().props()).toHaveProperty('error', undefined);
+          expect(wrapped()).toHaveAttribute('data-error', 'undefined');
         });
       });
     });
@@ -269,87 +253,84 @@ describe('An evaluateExpressions wrapper', () => {
 
   describe('after the second property resolves', () => {
     beforeEach(async () => {
-      await bar.resolve('second');
-      await timers(wrapper);
+      bar.resolve('second');
+      await waitForDomChange();
     });
 
     it('passes the first property as undefined', () => {
-      expect(wrapped().props()).toHaveProperty('foo', undefined);
+      expect(wrapped()).toHaveAttribute('data-foo', 'undefined');
     });
 
     it('passes the second property value', () => {
-      expect(wrapped().props()).toHaveProperty('bar', 'second');
+      expect(wrapped()).toHaveAttribute('data-bar', 'second');
     });
 
     it('sets pending to true', () => {
-      expect(wrapped().props()).toHaveProperty('pending', true);
+      expect(wrapped()).toHaveAttribute('data-pending', 'true');
     });
   });
 
   describe('after the second property errors', () => {
     beforeEach(async () => {
-      await timers(wrapper);
       bar.reject(new Error('error'));
-      await timers(wrapper);
+      await waitForDomChange();
     });
 
     it('passes the first property as undefined', () => {
-      expect(wrapped().props()).toHaveProperty('foo', undefined);
+      expect(wrapped()).toHaveAttribute('data-foo', 'undefined');
     });
 
     it('passes the second property as undefined', () => {
-      expect(wrapped().props()).toHaveProperty('bar', undefined);
+      expect(wrapped()).toHaveAttribute('data-bar', 'undefined');
     });
 
     it('sets pending to true', () => {
-      expect(wrapped().props()).toHaveProperty('pending', true);
+      expect(wrapped()).toHaveAttribute('data-pending', 'true');
     });
 
     it('sets the error', () => {
-      expect(wrapped().props()).toHaveProperty('error', new Error('error'));
+      expect(wrapped()).toHaveAttribute('data-error', 'Error: error');
     });
   });
 
   describe('after both properties resolve', () => {
     beforeEach(async () => {
-      await foo.resolve('first');
-      await bar.resolve('second');
-      await timers(wrapper);
+      foo.resolve('first');
+      bar.resolve('second');
+      await waitForDomChange();
     });
 
     it('passes the first property value', () => {
-      expect(wrapped().props()).toHaveProperty('foo', 'first');
+      expect(wrapped()).toHaveAttribute('data-foo', 'first');
     });
 
     it('passes the second property value', () => {
-      expect(wrapped().props()).toHaveProperty('bar', 'second');
+      expect(wrapped()).toHaveAttribute('data-bar', 'second');
     });
 
     it('sets pending to false', () => {
-      expect(wrapped().props()).toHaveProperty('pending', false);
+      expect(wrapped()).toHaveAttribute('data-pending', 'false');
     });
 
     describe('after the user changes', () => {
-      beforeEach(() => {
-        bar = mockPromise();
-        bar.resolve('second change');
+      beforeEach(async () => {
+        bar = new MockPromise();
         data.resolve.mockReturnValue(bar);
         act(() => {
           auth.mockWebId('https://example.org/#me');
         });
-        wrapper.update();
       });
 
       it('passes the first property value', () => {
-        expect(wrapped().props()).toHaveProperty('foo', 'first');
+        expect(wrapped()).toHaveAttribute('data-foo', 'first');
       });
 
       it('passes the second property as undefined', () => {
-        expect(wrapped().props()).toHaveProperty('bar', undefined);
+        expect(wrapped()).toHaveAttribute('data-bar', 'undefined');
       });
 
       it('sets pending to true', () => {
-        expect(wrapped().props()).toHaveProperty('pending', true);
+        expect(wrapped()).toHaveAttribute('data-pending', 'true');
       });
 
       it('re-evaluates the string expression', () => {
@@ -358,19 +339,20 @@ describe('An evaluateExpressions wrapper', () => {
 
       describe('after both properties resolve', () => {
         beforeEach(async () => {
-          await timers(wrapper);
+          bar.resolve('second change');
+          await waitForDomChange();
         });
 
         it('passes the same first property value', () => {
-          expect(wrapped().props()).toHaveProperty('foo', 'first');
+          expect(wrapped()).toHaveAttribute('data-foo', 'first');
         });
 
         it('passes the changed second property value', () => {
-          expect(wrapped().props()).toHaveProperty('bar', 'second change');
+          expect(wrapped()).toHaveAttribute('data-bar', 'second change');
         });
 
         it('sets pending to false', () => {
-          expect(wrapped().props()).toHaveProperty('pending', false);
+          expect(wrapped()).toHaveAttribute('data-pending', 'false');
         });
       });
     });

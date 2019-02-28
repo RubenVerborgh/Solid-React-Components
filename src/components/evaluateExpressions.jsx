@@ -11,12 +11,14 @@ export default function evaluateExpressions(valueProps, listProps, Component) {
   // Shift the optional listProps parameter when not specified
   if (!Component)
     [Component, listProps] = [listProps, []];
+  valueProps = valueProps ? [...valueProps] : [];
+  listProps = listProps ? [...listProps] : [];
 
   // Create the initial state for all Component instances
   const initialState = { pending: true };
-  for (const name of valueProps || [])
+  for (const name of valueProps)
     initialState[name] = undefined;
-  for (const name of listProps || [])
+  for (const name of listProps)
     initialState[name] = [];
 
   // Create a higher-order component that wraps the given Component

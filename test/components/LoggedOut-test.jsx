@@ -1,18 +1,16 @@
 import React from 'react';
 import { LoggedOut } from '../../src/';
-import { mount } from 'enzyme';
-import { act } from 'react-dom/test-utils';
+import { act, render, cleanup } from 'react-testing-library';
 import auth from 'solid-auth-client';
 
 describe('A LoggedOut pane', () => {
-  let pane;
-  beforeEach(() => pane.update());
+  let container;
+  afterAll(cleanup);
 
   describe('with children', () => {
-    beforeAll(() => !act(() => {
-      pane = mount(<LoggedOut>Logged out</LoggedOut>);
-    }));
-    afterAll(() => pane.unmount());
+    beforeAll(() => {
+      ({ container } = render(<LoggedOut>Logged out</LoggedOut>));
+    });
 
     describe('when the user is not logged in', () => {
       beforeAll(() => !act(() => {
@@ -20,7 +18,7 @@ describe('A LoggedOut pane', () => {
       }));
 
       it('renders the content', () => {
-        expect(pane.debug()).toMatch(/Logged out/);
+        expect(container.innerHTML).toBe('Logged out');
       });
     });
 
@@ -30,16 +28,15 @@ describe('A LoggedOut pane', () => {
       }));
 
       it('is empty', () => {
-        expect(pane.debug()).toBe('<LoggedOut />');
+        expect(container.innerHTML).toBe('');
       });
     });
   });
 
   describe('without children', () => {
-    beforeAll(() => !act(() => {
-      pane = mount(<LoggedOut/>);
-    }));
-    afterAll(() => pane.unmount());
+    beforeAll(() => {
+      ({ container } = render(<LoggedOut/>));
+    });
 
     describe('when the user is not logged in', () => {
       beforeAll(() => !act(() => {
@@ -47,7 +44,7 @@ describe('A LoggedOut pane', () => {
       }));
 
       it('is empty', () => {
-        expect(pane.debug()).toBe('<LoggedOut />');
+        expect(container.innerHTML).toBe('');
       });
     });
   });

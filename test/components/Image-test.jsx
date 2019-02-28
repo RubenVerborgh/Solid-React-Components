@@ -1,198 +1,185 @@
 import React from 'react';
 import { Image } from '../../src/';
-import { shallow } from 'enzyme';
-
-// Mock evaluateExpressions so we can fake expression values directly
-jest.mock('../../src/components/evaluateExpressions', () =>
-  (fields, Component) => {
-    if (Component.name === 'Image') {
-      const Wrapper = (...args) => Component(...args);
-      Wrapper.fields = fields;
-      return Wrapper;
-    }
-    return Component;
-  });
+import { render, cleanup, waitForDomChange } from 'react-testing-library';
+import MockPromise from 'jest-mock-promise';
+import data from '@solid/query-ldflex';
 
 describe('An Image', () => {
-  it('wraps the component with expression evaluation', () => {
-    expect(Image).toHaveProperty(['fields']);
+  let expression;
+  beforeEach(() => {
+    data.resolve.mockReturnValue(expression = new MockPromise());
   });
-
-  it('evaluates src expressions', () => {
-    expect(Image).toHaveProperty(['fields'], ['src']);
-  });
+  afterEach(cleanup);
 
   describe('with a src property', () => {
-    let image;
-    beforeAll(() => {
-      image = shallow(<Image className="pic" width="100"/>);
+    let container;
+    const img = () => container.firstChild;
+    beforeEach(() => {
+      const image = <Image src="user.image" className="pic" width="100"/>;
+      ({ container } = render(image));
     });
-    afterAll(() => image.unmount());
 
     describe('before the expression resolves', () => {
-      beforeAll(() => image.setProps({ pending: true }));
-
       it('is empty', () => {
-        expect(image.html()).toBe(null);
+        expect(container.innerHTML).toBe('');
       });
     });
 
     describe('after src resolves to a URL', () => {
-      beforeAll(() => image.setProps({ src: 'https://example.com/image.jpg' }));
+      beforeEach(async () => {
+        expression.resolve('https://example.com/image.jpg');
+        await waitForDomChange();
+      });
 
       it('is an img', () => {
-        expect(image.name()).toBe('img');
+        expect(img().tagName).toMatch(/^img$/i);
       });
 
       it('has the resolved src', () => {
-        expect(image.prop('src')).toBe('https://example.com/image.jpg');
+        expect(img()).toHaveAttribute('src', 'https://example.com/image.jpg');
       });
 
       it('copies other properties', () => {
-        expect(image.prop('className')).toBe('pic');
-        expect(image.prop('width')).toBe('100');
+        expect(img()).toHaveAttribute('class', 'pic');
+        expect(img()).toHaveAttribute('width', '100');
       });
     });
 
     describe('after src resolves to undefined', () => {
-      beforeAll(() => image.setProps({ src: undefined }));
+      beforeEach(async () => {
+        expression.resolve(undefined);
+        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
+      });
 
       it('is empty', () => {
-        expect(image.html()).toBe(null);
+        expect(container.innerHTML).toBe('');
       });
     });
 
     describe('after src errors', () => {
-      beforeAll(() => image.setProps({ error: new Error() }));
+      beforeEach(async () => {
+        expression.reject(new Error());
+        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
+      });
 
       it('is empty', () => {
-        expect(image.html()).toBe(null);
+        expect(container.innerHTML).toBe('');
       });
     });
   });
 
   describe('with src and defaultSrc properties', () => {
-    let image;
-    beforeAll(() => {
-      image = shallow(
-        <Image defaultSrc="/default.png" className="pic" width="100"/>);
+    let container;
+    const img = () => container.firstChild;
+    beforeEach(() => {
+      const image = <Image src="user.image" defaultSrc="/default.png"/>;
+      ({ container } = render(image));
     });
-    afterAll(() => image.unmount());
 
     describe('before the expression resolves', () => {
-      beforeAll(() => image.setProps({ pending: true }));
-
       it('is an img', () => {
-        expect(image.name()).toBe('img');
+        expect(img().tagName).toMatch(/^img$/i);
       });
 
       it('has the defaultSrc', () => {
-        expect(image.prop('src')).toBe('/default.png');
-      });
-
-      it('copies other properties', () => {
-        expect(image.prop('className')).toBe('pic');
-        expect(image.prop('width')).toBe('100');
+        expect(img()).toHaveAttribute('src', '/default.png');
       });
     });
 
     describe('after src resolves to a URL', () => {
-      beforeAll(() => image.setProps({ src: 'https://example.com/image.jpg' }));
+      beforeEach(async () => {
+        expression.resolve('https://example.com/image.jpg');
+        await waitForDomChange();
+      });
 
       it('is an img', () => {
-        expect(image.name()).toBe('img');
+        expect(img().tagName).toMatch(/^img$/i);
       });
 
       it('has the resolved src', () => {
-        expect(image.prop('src')).toBe('https://example.com/image.jpg');
-      });
-
-      it('copies other properties', () => {
-        expect(image.prop('className')).toBe('pic');
-        expect(image.prop('width')).toBe('100');
+        expect(img()).toHaveAttribute('src', 'https://example.com/image.jpg');
       });
     });
 
     describe('after src resolves to undefined', () => {
-      beforeAll(() => image.setProps({ src: undefined }));
+      beforeEach(async () => {
+        expression.resolve(undefined);
+        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
+      });
 
       it('is an img', () => {
-        expect(image.name()).toBe('img');
+        expect(img().tagName).toMatch(/^img$/i);
       });
 
       it('has the defaultSrc', () => {
-        expect(image.prop('src')).toBe('/default.png');
-      });
-
-      it('copies other properties', () => {
-        expect(image.prop('className')).toBe('pic');
-        expect(image.prop('width')).toBe('100');
+        expect(img()).toHaveAttribute('src', '/default.png');
       });
     });
 
     describe('after src errors', () => {
-      beforeAll(() => image.setProps({ error: new Error() }));
+      beforeEach(async () => {
+        expression.reject(new Error());
+        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
+      });
 
       it('is an img', () => {
-        expect(image.name()).toBe('img');
+        expect(img().tagName).toMatch(/^img$/i);
       });
 
       it('has the defaultSrc', () => {
-        expect(image.prop('src')).toBe('/default.png');
-      });
-
-      it('copies other properties', () => {
-        expect(image.prop('className')).toBe('pic');
-        expect(image.prop('width')).toBe('100');
+        expect(img()).toHaveAttribute('src', '/default.png');
       });
     });
   });
 
   describe('with src and children', () => {
-    let image;
-    beforeAll(() => {
-      image = shallow(<Image className="pic" width="100">children</Image>);
+    let container;
+    const img = () => container.firstChild;
+    beforeEach(() => {
+      const image = <Image src="user.image">children</Image>;
+      ({ container } = render(image));
     });
-    afterAll(() => image.unmount());
 
     describe('before the expression resolves', () => {
-      beforeAll(() => image.setProps({ pending: true }));
-
       it('renders the children', () => {
-        expect(image.text()).toBe('children');
+        expect(container.innerHTML).toBe('children');
       });
     });
 
     describe('after src resolves to a URL', () => {
-      beforeAll(() => image.setProps({ src: 'https://example.com/image.jpg' }));
+      beforeEach(async () => {
+        expression.resolve('https://example.com/image.jpg');
+        await waitForDomChange();
+      });
 
       it('is an img', () => {
-        expect(image.name()).toBe('img');
+        expect(img().tagName).toMatch(/^img$/i);
       });
 
       it('has the resolved src', () => {
-        expect(image.prop('src')).toBe('https://example.com/image.jpg');
-      });
-
-      it('copies other properties', () => {
-        expect(image.prop('className')).toBe('pic');
-        expect(image.prop('width')).toBe('100');
+        expect(img()).toHaveAttribute('src', 'https://example.com/image.jpg');
       });
     });
 
     describe('after src resolves to undefined', () => {
-      beforeAll(() => image.setProps({ src: undefined }));
+      beforeEach(async () => {
+        expression.resolve(undefined);
+        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
+      });
 
       it('renders the children', () => {
-        expect(image.text()).toBe('children');
+        expect(container.innerHTML).toBe('children');
       });
     });
 
     describe('after src errors', () => {
-      beforeAll(() => image.setProps({ error: new Error() }));
+      beforeEach(async () => {
+        expression.reject(new Error());
+        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
+      });
 
-      it('renders the children', async () => {
-        expect(image.text()).toBe('children');
+      it('renders the children', () => {
+        expect(container.innerHTML).toBe('children');
       });
     });
   });
