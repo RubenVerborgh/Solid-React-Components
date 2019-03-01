@@ -2,6 +2,8 @@ import useWebId from './hooks/useWebId';
 import useLoggedIn from './hooks/useLoggedIn';
 import useLoggedOut from './hooks/useLoggedOut';
 
+import useLDflex from './hooks/useLDflex';
+
 import withWebId from './components/withWebId';
 import evaluateExpressions from './components/evaluateExpressions';
 import evaluateList from './components/evaluateList';
@@ -27,6 +29,7 @@ export {
   useWebId,
   useLoggedIn,
   useLoggedOut,
+  useLDflex,
 
   withWebId,
   evaluateExpressions,

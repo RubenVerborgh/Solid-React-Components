@@ -1,5 +1,5 @@
 import { useLoggedOut } from '../../src/';
-import { renderHook, cleanup, act } from 'react-hooks-testing-library';
+import { renderHook, cleanup } from 'react-hooks-testing-library';
 import auth from 'solid-auth-client';
 
 describe('useLoggedOut', () => {
@@ -15,12 +15,12 @@ describe('useLoggedOut', () => {
   });
 
   it('returns true when the user is logged out', () => {
-    act(() => void auth.mockWebId(null));
+    auth.mockWebId(null);
     expect(result.current).toBe(true);
   });
 
   it('returns false the user is logged in', () => {
-    act(() => void auth.mockWebId('https://example.org/#me'));
+    auth.mockWebId('https://example.org/#me');
     expect(result.current).toBe(false);
   });
 });

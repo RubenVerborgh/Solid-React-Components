@@ -1,4 +1,5 @@
 import EventEmitter from 'events';
+import { act } from 'react-testing-library';
 
 class SolidAuthClient extends EventEmitter {
   constructor() {
@@ -18,8 +19,9 @@ class SolidAuthClient extends EventEmitter {
 
   mockWebId(webId) {
     this.session = webId ? { webId } : null;
-    this.emit('session', this.session);
-    return new Promise(resolve => setImmediate(resolve));
+    act(() => {
+      this.emit('session', this.session);
+    });
   }
 }
 
