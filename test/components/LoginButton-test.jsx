@@ -30,10 +30,10 @@ describe('A LoginButton', () => {
     });
 
     it('logs the user in when clicked', () => {
-      expect(auth.popupLogin).not.toBeCalled();
+      expect(auth.popupLogin).not.toHaveBeenCalled();
       fireEvent.click(button);
-      expect(auth.popupLogin).toBeCalledTimes(1);
-      expect(auth.popupLogin).toBeCalledWith({ popupUri: 'popup.html' });
+      expect(auth.popupLogin).toHaveBeenCalledTimes(1);
+      expect(auth.popupLogin).toHaveBeenCalledWith({ popupUri: 'popup.html' });
     });
   });
 

@@ -30,10 +30,10 @@ describe('A LogoutButton', () => {
     });
 
     it('logs the user out when clicked', () => {
-      expect(auth.logout).not.toBeCalled();
+      expect(auth.logout).not.toHaveBeenCalled();
       fireEvent.click(button);
-      expect(auth.logout).toBeCalledTimes(1);
-      expect(auth.logout).toBeCalledWith();
+      expect(auth.logout).toHaveBeenCalledTimes(1);
+      expect(auth.logout).toHaveBeenCalledWith();
     });
   });
 
