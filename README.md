@@ -1,15 +1,11 @@
 # Core React Components for Solid
-A core set of [React](https://reactjs.org/) components
+A core set of [React](https://reactjs.org/) components and hooks
 for building your own [Solid](https://solid.inrupt.com/) components and apps.
 
 [![npm version](https://img.shields.io/npm/v/@solid/react.svg)](https://www.npmjs.com/package/@solid/react)
 [![Build Status](https://travis-ci.org/solid/react-components.svg?branch=master)](https://travis-ci.org/solid/react-components)
 [![Coverage Status](https://coveralls.io/repos/github/solid/react-components/badge.svg?branch=master)](https://coveralls.io/github/solid/react-components?branch=master)
 [![Dependency Status](https://david-dm.org/solid/react-components.svg)](https://david-dm.org/solid/react-components)
-
-🚧 Work in progress:
-you currently get components to _read_ data.
-Writing is still underway.
 
 ### Purpose
 ✨ [Solid](https://solid.inrupt.com/) is an ecosystem for people, data, and apps
@@ -112,91 +108,84 @@ Learn how to [write your own LDflex expressions](https://github.com/solid/query-
 ## 💪🏾 Create your own components
 The Solid React library makes it easy
 to create your own components
-to interact with the current user
-and to fetch Linked Data from the Web.
-To this end,
-the library ships with
-[Higher-Order Components](https://reactjs.org/docs/higher-order-components.html)
-that do the heavy lifting for your components.
-
-The easiest way is to look at the [implementation](https://github.com/solid/react-components/tree/master/src/components)
+that interact with the current user
+and fetch Linked Data from the Web.
+This is easy thanks to [hooks](https://reactjs.org/docs/hooks-intro.html),
+introduced in React 16.8.
+A good way to get started is by looking at the [implementation](https://github.com/solid/react-components/tree/master/src/components)
 of built-in components like
 [AuthButton](https://github.com/solid/react-components/blob/master/src/components/AuthButton.jsx),
 [Name](https://github.com/solid/react-components/blob/master/src/components/Name.jsx),
 and
 [List](https://github.com/solid/react-components/blob/master/src/components/List.jsx).
-They are all relatively straightforward,
-since the complexity is abstracted
-by the mechanisms listed below.
 
-```JavaScript
-import { withWebId, evaluateExpressions, evaluateList } from '@solid/react';
-```
+Not a hooks user yet,
+or prefer writing components with functions instead of classes?
+Our [higher-order components](https://github.com/solid/react-components/blob/v1.3.1/README.md#-building-your-own-components)
+will help you out.
 
 #### Identify the user
 In Solid, people are identified by a WebID,
-which is a URL that points to them
-and leads to their data.
+a URL that points to them and leads to their data.
 
-By wrapping your component definition with `withWebId`,
-the user's WebID will automatically be set
-on the `webId` property of your component
-whenever the login status changes.
-If it is `undefined`, the login status is still loading;
-`null` signals the user is not logged in.
+The `useWebID` hook gives you the WebID
+of the currently logged in user as a string,
+which changes automatically whenever someone logs in or out.
+The `useLoggedIn` and `useLoggedOut` hooks
+provide similar functionality, but return a boolean value.
 
 ```jsx
-const MyComponent = withWebId(props =>
-  <p>Hey user, your WebID is {props.webID}.</p>);
-```
-```jsx
-<MyComponent/>
+import { useWebId, useLoggedIn, useLoggedOut } from '@solid/react';
+
+function WebIdStatus() {
+  const webId = useWebId();
+  return <span>Your WebID is {webId}.</span>;
+}
+
+function Greeting() {
+  const loggedOut = useLoggedOut();
+  return <span>You are {loggedOut ? 'anonymous' : 'logged in' }.</span>;
+}
 ```
 
 #### Load data from the user or the Web
-To use data from LDflex expressions,
-wrap your component definition with `evaluateExpressions`.
-The first argument is an array of properties
-in which you expect expressions.
-Your component will then get back the result
-in the property of the same name.
+The `useLDflexValue` and `useLDflexList` hooks
+let you load a single result or multiple results
+of an LDflex expression.
 
 ```jsx
-const MyComponent = evaluateExpressions(['name'], props =>
-  <p>The name is {`${props.name}`}.</p>);
-```
-```jsx
-<MyComponent name="user.friends.name"/>
-```
-Note how we force `props.name` into a string through `${props.name}`
-(or, alternatively, `props.name.toString()` or `'' + props.name`).
-This is needed because `props.name` is a special object
-that _looks_ like a string but isn't quite a string.
+import { useLDflexValue, useLDflexList } from '@solid/react';
 
-If a property contains a list of things rather than a single value,
-pass its name to the second parameter:
-
-```jsx
-const MyComponent = evaluateExpressions(['name'], ['friends'], props =>
-  <p>Your name is {`${props.name}`} and you have {props.friends.length} friends.</p>);
+function ConnectionCount() {
+  const name = useLDflexValue('user.firstName') || 'unknown';
+  const friends = useLDflexList('user.friends');
+  return <span>{`${name}`} is connected to {friends.length} people.</span>;
+}
 ```
-```jsx
-<MyComponent name="user.name" friends="user.friends"/>
-```
+Note how we force `name` into a string through `` `${name}` ``
+(or, alternatively, `name.toString()` or `'' + name`).
+This is needed because LDflex values are special objects
+that _look_ like a string, but actually provide extra functionality.
 
-Specifically for building lists of things,
-there is the `evaluateList` helper.
-The built-in [List](https://github.com/solid/react-components/blob/master/src/components/List.jsx) component is an example.
+Finally, the `useLDflex` hook also returns status information about the expression.
+When its optional second argument is `true`, it returns a list.
 
 ```jsx
-const Greetings = evaluateList('people', ({ people, greeting }) =>
-  <ul>{people.map(person =>
-    <li key={person}>{greeting} {`${person}`}!</li>
-  )}</ul>
-);
-```
-```jsx
-<Greetings people="user.friends" greeting="Hello"/>
+import { List, useLDflex } from '@solid/react';
+
+function BlogPosts({ author = 'https://ruben.verborgh.org/profile/#me' }) {
+  const expression = `[${author}].blog[schema:blogPost].label`;
+  const [posts, pending, error] = useLDflex(expression, true);
+
+  if (pending)
+    return <span>loading <em>({posts.length} posts so far)</em></span>;
+  if (error)
+    return <span>loading failed: {error.message}</span>;
+
+  return <ul>{posts.map((label, index) =>
+           <li key={index}>{`${label}`}</li>)}
+         </ul>;
+}
 ```
 
 ## License
