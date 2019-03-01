@@ -2,9 +2,9 @@
   extends: plugin:jest/recommended,
   rules: {
     callback-return: off,
+    global-require: off,
     func-style: off,
     new-cap: off,
     no-empty-function: off,
-    no-void: off,
   },
 }

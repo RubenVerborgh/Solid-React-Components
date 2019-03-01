@@ -1,10 +1,9 @@
 import React from 'react';
-import evaluateExpressions from './evaluateExpressions';
+import useLDflex from '../hooks/useLDflex';
 
 /** Displays the value of a Solid LDflex expression. */
-export default evaluateExpressions(['src'], function Value({
-  pending, error, src, children,
-}) {
+export default function Value({ src, children }) {
+  const [value, pending, error] = useLDflex(src);
   // Render pending state
   if (pending)
     return children || <span className="solid value pending"/>;
@@ -12,8 +11,8 @@ export default evaluateExpressions(['src'], function Value({
   if (error)
     return children || <span className="solid value error" data-error={error.message}/>;
   // Render empty value
-  if (src === undefined || src === null)
+  if (value === undefined || value === null)
     return children || <span className="solid value empty"/>;
   // Render stringified value
-  return `${src}`;
-});
+  return `${value}`;
+}

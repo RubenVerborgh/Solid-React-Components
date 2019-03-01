@@ -1,6 +1,6 @@
 import React from 'react';
 import { LoggedIn } from '../../src/';
-import { act, render, cleanup } from 'react-testing-library';
+import { render, cleanup } from 'react-testing-library';
 import auth from 'solid-auth-client';
 
 describe('A LoggedIn pane', () => {
@@ -13,9 +13,7 @@ describe('A LoggedIn pane', () => {
     });
 
     describe('when the user is not logged in', () => {
-      beforeAll(() => !act(() => {
-        auth.mockWebId(null);
-      }));
+      beforeAll(() => auth.mockWebId(null));
 
       it('is empty', () => {
         expect(container.innerHTML).toBe('');
@@ -23,9 +21,7 @@ describe('A LoggedIn pane', () => {
     });
 
     describe('when the user is logged in', () => {
-      beforeAll(() => !act(() => {
-        auth.mockWebId('https://example.org/#me');
-      }));
+      beforeAll(() => auth.mockWebId('https://example.org/#me'));
 
       it('renders the content', () => {
         expect(container.innerHTML).toBe('Logged in');
@@ -39,9 +35,7 @@ describe('A LoggedIn pane', () => {
     });
 
     describe('when the user is logged in', () => {
-      beforeAll(() => !act(() => {
-        auth.mockWebId('https://example.org/#me');
-      }));
+      beforeAll(() => auth.mockWebId('https://example.org/#me'));
 
       it('is empty', () => {
         expect(container.innerHTML).toBe('');

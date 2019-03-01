@@ -1,6 +1,6 @@
 import React from 'react';
 import { withWebId } from '../../src/';
-import { act, render, cleanup } from 'react-testing-library';
+import { render, cleanup } from 'react-testing-library';
 import auth from 'solid-auth-client';
 
 describe('A withWebId wrapper', () => {
@@ -28,9 +28,7 @@ describe('A withWebId wrapper', () => {
   });
 
   describe('when the user is not logged in', () => {
-    beforeAll(() => !act(() => {
-      auth.mockWebId(null);
-    }));
+    beforeAll(() => auth.mockWebId(null));
 
     it('renders the wrapped component', () => {
       expect(container).toHaveTextContent('contents');
@@ -47,9 +45,7 @@ describe('A withWebId wrapper', () => {
 
   describe('when the user is logged in', () => {
     const webId = 'https://example.org/#me';
-    beforeAll(() => !act(() => {
-      auth.mockWebId(webId);
-    }));
+    beforeAll(() => auth.mockWebId(webId));
 
     it('renders the wrapped component', () => {
       expect(container).toHaveTextContent('contents');

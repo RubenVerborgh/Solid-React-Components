@@ -1,14 +1,11 @@
 import React from 'react';
 import { Image } from '../../src/';
-import { render, cleanup, waitForDomChange } from 'react-testing-library';
-import MockPromise from 'jest-mock-promise';
-import data from '@solid/query-ldflex';
+import { render, cleanup } from 'react-testing-library';
+import useLDflex from '../../src/hooks/useLDflex';
+
+jest.mock('../../src/hooks/useLDflex', () => require('../__mocks__/useLDflex'));
 
 describe('An Image', () => {
-  let expression;
-  beforeEach(() => {
-    data.resolve.mockReturnValue(expression = new MockPromise());
-  });
   afterEach(cleanup);
 
   describe('with a src property', () => {
@@ -26,9 +23,8 @@ describe('An Image', () => {
     });
 
     describe('after src resolves to a URL', () => {
-      beforeEach(async () => {
-        expression.resolve('https://example.com/image.jpg');
-        await waitForDomChange();
+      beforeEach(() => {
+        useLDflex.resolve('user.image', 'https://example.com/image.jpg');
       });
 
       it('is an img', () => {
@@ -46,9 +42,8 @@ describe('An Image', () => {
     });
 
     describe('after src resolves to undefined', () => {
-      beforeEach(async () => {
-        expression.resolve(undefined);
-        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
+      beforeEach(() => {
+        useLDflex.resolve('user.image', undefined);
       });
 
       it('is empty', () => {
@@ -57,9 +52,8 @@ describe('An Image', () => {
     });
 
     describe('after src errors', () => {
-      beforeEach(async () => {
-        expression.reject(new Error());
-        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
+      beforeEach(() => {
+        useLDflex.reject('user.image', new Error());
       });
 
       it('is empty', () => {
@@ -87,9 +81,8 @@ describe('An Image', () => {
     });
 
     describe('after src resolves to a URL', () => {
-      beforeEach(async () => {
-        expression.resolve('https://example.com/image.jpg');
-        await waitForDomChange();
+      beforeEach(() => {
+        useLDflex.resolve('user.image', 'https://example.com/image.jpg');
       });
 
       it('is an img', () => {
@@ -102,9 +95,8 @@ describe('An Image', () => {
     });
 
     describe('after src resolves to undefined', () => {
-      beforeEach(async () => {
-        expression.resolve(undefined);
-        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
+      beforeEach(() => {
+        useLDflex.resolve('user.image', undefined);
       });
 
       it('is an img', () => {
@@ -117,9 +109,8 @@ describe('An Image', () => {
     });
 
     describe('after src errors', () => {
-      beforeEach(async () => {
-        expression.reject(new Error());
-        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
+      beforeEach(() => {
+        useLDflex.reject('user.image', new Error());
       });
 
       it('is an img', () => {
@@ -147,9 +138,8 @@ describe('An Image', () => {
     });
 
     describe('after src resolves to a URL', () => {
-      beforeEach(async () => {
-        expression.resolve('https://example.com/image.jpg');
-        await waitForDomChange();
+      beforeEach(() => {
+        useLDflex.resolve('user.image', 'https://example.com/image.jpg');
       });
 
       it('is an img', () => {
@@ -162,9 +152,8 @@ describe('An Image', () => {
     });
 
     describe('after src resolves to undefined', () => {
-      beforeEach(async () => {
-        expression.resolve(undefined);
-        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
+      beforeEach(() => {
+        useLDflex.resolve('user.image', undefined);
       });
 
       it('renders the children', () => {
@@ -173,9 +162,8 @@ describe('An Image', () => {
     });
 
     describe('after src errors', () => {
-      beforeEach(async () => {
-        expression.reject(new Error());
-        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
+      beforeEach(() => {
+        useLDflex.reject('user.image', new Error());
       });
 
       it('renders the children', () => {

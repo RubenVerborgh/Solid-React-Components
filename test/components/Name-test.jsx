@@ -1,24 +1,36 @@
 import React from 'react';
 import { Name } from '../../src/';
-import { render, cleanup, waitForDomChange } from 'react-testing-library';
-import data from '@solid/query-ldflex';
+import { render, cleanup } from 'react-testing-library';
+import useLDflex from '../../src/hooks/useLDflex';
 
-data.resolve.mockImplementation(async (path) => ({
-  'user.name': 'The User',
-})[path]);
+jest.mock('../../src/hooks/useLDflex', () => require('../__mocks__/useLDflex'));
 
 describe('Name', () => {
   afterEach(cleanup);
 
   it('renders a name with src', async () => {
-    const { container } = render(<Name src="user"/>);
-    await waitForDomChange();
-    expect(container).toHaveTextContent('The User');
+    const name = <Name src="user"/>;
+    const { container } = render(name);
+
+    useLDflex.resolve('user.name', 'Example Name');
+    expect(container).toHaveTextContent('Example Name');
   });
 
-  it('renders a name with children', async () => {
-    const { container } = render(<Name src="other">default</Name>);
-    await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
+  it('renders children until src resolves', async () => {
+    const name = <Name src="user">default</Name>;
+    const { container } = render(name);
+    expect(container).toHaveTextContent('default');
+
+    useLDflex.resolve('user.name', 'Example Name');
+    expect(container).toHaveTextContent('Example Name');
+  });
+
+  it('renders children if src does not resolve', async () => {
+    const name = <Name src="other">default</Name>;
+    const { container } = render(name);
+    expect(container).toHaveTextContent('default');
+
+    useLDflex.resolve('other.name', undefined);
     expect(container).toHaveTextContent('default');
   });
 });

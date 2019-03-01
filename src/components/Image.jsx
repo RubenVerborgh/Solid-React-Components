@@ -1,10 +1,8 @@
 import React from 'react';
-import evaluateExpressions from './evaluateExpressions';
-import { domProps } from '../util';
+import useLDflexValue from '../hooks/useLDflexValue';
 
 /** Displays an image whose source is a Solid LDflex expression. */
-export default evaluateExpressions(['src'], function Image({
-  defaultSrc, src = defaultSrc, children = null, ...props
-}) {
-  return src ? <img src={src} alt="" {...domProps(props)}/> : children;
-});
+export default function Image({ src, defaultSrc, children = null, ...props }) {
+  src = useLDflexValue(src) || defaultSrc;
+  return src ? <img src={src} alt="" {...props}/> : children;
+}

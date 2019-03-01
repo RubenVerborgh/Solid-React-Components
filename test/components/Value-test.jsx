@@ -1,16 +1,13 @@
 import React from 'react';
 import { Value } from '../../src/';
-import { act, render, cleanup, waitForDomChange } from 'react-testing-library';
-import MockPromise from 'jest-mock-promise';
-import data from '@solid/query-ldflex';
-import auth from 'solid-auth-client';
+import { render, cleanup } from 'react-testing-library';
+import useLDflex from '../../src/hooks/useLDflex';
+
+jest.mock('../../src/hooks/useLDflex', () => require('../__mocks__/useLDflex'));
 
 describe('A Value', () => {
-  let container, expression, rerender;
+  let container, rerender;
   const span = () => container.firstChild;
-  beforeEach(() => {
-    data.resolve.mockReturnValue(expression = new MockPromise());
-  });
   afterEach(cleanup);
 
   describe('with a string expression', () => {
@@ -38,9 +35,8 @@ describe('A Value', () => {
     });
 
     describe('after the expression is evaluated', () => {
-      beforeEach(async () => {
-        act(() => void expression.resolve({ toString: () => 'contents' }));
-        await waitForDomChange();
+      beforeEach(() => {
+        useLDflex.resolve('user.firstname', { toString: () => 'contents' });
       });
 
       it('contains the resolved contents', () => {
@@ -49,9 +45,8 @@ describe('A Value', () => {
     });
 
     describe('after the expression evaluates to undefined', () => {
-      beforeEach(async () => {
-        act(() => void expression.resolve(undefined));
-        await waitForDomChange();
+      beforeEach(() => {
+        useLDflex.resolve('user.firstname', undefined);
       });
 
       it('is an empty span', () => {
@@ -73,9 +68,8 @@ describe('A Value', () => {
     });
 
     describe('after the expression errors', () => {
-      beforeEach(async () => {
-        act(() => void expression.reject(new Error('the error message')));
-        await waitForDomChange();
+      beforeEach(() => {
+        useLDflex.reject('user.firstname', new Error('the error message'));
       });
 
       it('is an empty span', () => {
@@ -101,43 +95,13 @@ describe('A Value', () => {
     });
 
     describe('after src changes', () => {
-      beforeEach(async () => {
-        data.resolve.mockReturnValue(Promise.resolve('new contents'));
+      beforeEach(() => {
         rerender(<Value src="user.other"/>);
-        await waitForDomChange();
+        useLDflex.resolve('user.other', 'new contents');
       });
 
       it('contains the resolved contents', () => {
         expect(container).toHaveTextContent('new contents');
-      });
-    });
-
-    describe('after the user changes', () => {
-      beforeEach(async () => {
-        data.resolve.mockReturnValue(Promise.resolve('new user'));
-        act(() => void auth.mockWebId('https://example.org/#me'));
-        await waitForDomChange();
-      });
-
-      it('re-evaluates the expression', () => {
-        expect(container).toHaveTextContent('new user');
-      });
-    });
-  });
-
-  describe('with a thenable', () => {
-    beforeEach(() => {
-      ({ container, rerender } = render(<Value src={new MockPromise()}/>));
-    });
-
-    describe('after the user changes', () => {
-      beforeEach(async () => {
-        data.resolve.mockReturnValue(Promise.resolve('new user'));
-        act(() => void auth.mockWebId('https://example.org/#me'));
-      });
-
-      it('does not re-evaluate the expression', async () => {
-        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
       });
     });
   });
@@ -154,9 +118,8 @@ describe('A Value', () => {
     });
 
     describe('after the expression is evaluated', () => {
-      beforeEach(async () => {
-        act(() => void expression.resolve({ toString: () => 'contents' }));
-        await waitForDomChange();
+      beforeEach(() => {
+        useLDflex.resolve('user.firstname', { toString: () => 'contents' });
       });
 
       it('contains the resolved contents', () => {
@@ -165,9 +128,8 @@ describe('A Value', () => {
     });
 
     describe('after the expression evaluates to undefined', () => {
-      beforeEach(async () => {
-        act(() => void expression.resolve(undefined));
-        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
+      beforeEach(() => {
+        useLDflex.resolve('user.firstname', undefined);
       });
 
       it('renders the children', () => {
@@ -176,9 +138,8 @@ describe('A Value', () => {
     });
 
     describe('after the expression errors', () => {
-      beforeEach(async () => {
-        act(() => void expression.reject(new Error('the error message')));
-        await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
+      beforeEach(() => {
+        useLDflex.reject('user.firstname', new Error('the error message'));
       });
 
       it('renders the children', () => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { evaluateExpressions } from '../../src/';
-import { act, render, cleanup, wait, waitForDomChange } from 'react-testing-library';
+import { render, cleanup, wait, waitForDomChange } from 'react-testing-library';
 import MockPromise from 'jest-mock-promise';
 import data from '@solid/query-ldflex';
 import auth from 'solid-auth-client';
@@ -315,9 +315,7 @@ describe('An evaluateExpressions wrapper', () => {
       beforeEach(async () => {
         bar = new MockPromise();
         data.resolve.mockReturnValue(bar);
-        act(() => {
-          auth.mockWebId('https://example.org/#me');
-        });
+        auth.mockWebId('https://example.org/#me');
       });
 
       it('passes the first property value', () => {

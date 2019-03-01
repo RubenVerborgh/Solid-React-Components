@@ -1,6 +1,6 @@
 import React from 'react';
 import { AuthButton } from '../../src/';
-import { act, render, cleanup } from 'react-testing-library';
+import { render, cleanup } from 'react-testing-library';
 import auth from 'solid-auth-client';
 
 describe('An AuthButton', () => {
@@ -14,9 +14,7 @@ describe('An AuthButton', () => {
     });
 
     describe('when the user is not logged in', () => {
-      beforeAll(() => !act(() => {
-        auth.mockWebId(null);
-      }));
+      beforeAll(() => auth.mockWebId(null));
 
       it('renders the login button', () => {
         expect(button()).toHaveTextContent('Log in');
@@ -29,9 +27,7 @@ describe('An AuthButton', () => {
     });
 
     describe('when the user is logged in', () => {
-      beforeAll(() => !act(() => {
-        auth.mockWebId('https://example.org/#me');
-      }));
+      beforeAll(() => auth.mockWebId('https://example.org/#me'));
 
       it('renders the logout button', () => {
         expect(button()).toHaveTextContent('Log out');
@@ -50,9 +46,7 @@ describe('An AuthButton', () => {
     });
 
     describe('when the user is not logged in', () => {
-      beforeAll(() => !act(() => {
-        auth.mockWebId(null);
-      }));
+      beforeAll(() => auth.mockWebId(null));
 
       it('does not use the built-in classes', () => {
         expect(button()).not.toHaveClass('solid', 'auth', 'logout');
@@ -64,9 +58,7 @@ describe('An AuthButton', () => {
     });
 
     describe('when the user is logged in', () => {
-      beforeAll(() => !act(() => {
-        auth.mockWebId('https://example.org/#me');
-      }));
+      beforeAll(() => auth.mockWebId('https://example.org/#me'));
 
       it('does not use the built-in classes', () => {
         expect(button()).not.toHaveClass('solid', 'auth', 'logout');
@@ -84,9 +76,7 @@ describe('An AuthButton', () => {
     });
 
     describe('when the user is not logged in', () => {
-      beforeAll(() => !act(() => {
-        auth.mockWebId(null);
-      }));
+      beforeAll(() => auth.mockWebId(null));
 
       it('uses the custom login label', () => {
         expect(button()).toHaveTextContent('Hello');
@@ -94,9 +84,7 @@ describe('An AuthButton', () => {
     });
 
     describe('when the user is logged in', () => {
-      beforeAll(() => !act(() => {
-        auth.mockWebId('https://example.org/#me');
-      }));
+      beforeAll(() => auth.mockWebId('https://example.org/#me'));
 
       it('uses the custom logout label', () => {
         expect(button()).toHaveTextContent('Goodbye');
