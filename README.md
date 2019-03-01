@@ -1,17 +1,17 @@
-# React for Solid
-Basic [React](https://reactjs.org/) components
+# Core React Components for Solid
+A core set of [React](https://reactjs.org/) components
 for building your own [Solid](https://solid.inrupt.com/) components and apps.
 
 [![npm version](https://img.shields.io/npm/v/@solid/react.svg)](https://www.npmjs.com/package/@solid/react)
 [![Build Status](https://travis-ci.org/solid/react-components.svg?branch=master)](https://travis-ci.org/solid/react-components)
 [![Coverage Status](https://coveralls.io/repos/github/solid/react-components/badge.svg?branch=master)](https://coveralls.io/github/solid/react-components?branch=master)
-[![Dependency Status](https://david-dm.org/solid/react.svg)](https://david-dm.org/solid/react)
+[![Dependency Status](https://david-dm.org/solid/react-components.svg)](https://david-dm.org/solid/react-components)
 
 🚧 Work in progress:
 you currently get components to _read_ data.
 Writing is still underway.
 
-## Purpose
+### Purpose
 ✨ [Solid](https://solid.inrupt.com/) is an ecosystem for people, data, and apps
 in which people can store their data where they want,
 independently of the apps they use.
@@ -25,7 +25,7 @@ so people's data from all over the Web can be connected together
 instead of needing to be stored in one giant space.
 This library makes working with Linked Data easier, too.
 
-## Example apps
+### Example apps
 These apps have already been built with React for Solid:
 - [Profile viewer](https://github.com/solid/profile-viewer-react) 👤
 - [LDflex playground](https://solid.github.io/ldflex-playground/) ⚾
@@ -33,7 +33,7 @@ These apps have already been built with React for Solid:
 - [Another profile viewer](https://gitlab.com/angelo-v/solid-profile-viewer) 👤
 - […add yours!](https://github.com/solid/react-components/edit/master/README.md)
 
-## Installation and usage
+### Install and go
 First add the package:
 ```bash
 yarn add @solid/react # or
@@ -45,12 +45,21 @@ Then you can import components like this:
 import { LoginButton, Value } from '@solid/react';
 ```
 
-## Components
+## Build Solid apps from React components
 The [demo app](https://github.com/solid/react-components/tree/master/demo)
 will inspire you on how to use the components listed below.
 
 ### 👮🏻‍♀️ Authentication
-#### Showing different content to logged in users
+#### Log the user in and out
+You will need a copy of [popup.html](https://solid.github.io/solid-auth-client/dist/popup.html) in your application folder.
+```jsx
+<LoginButton popup="popup.html"/>
+<LogoutButton>Log me out</LogoutButton>
+// Shows LoginButton or LogoutButton depending on the user's status
+<AuthButton popup="popup.html" login="Login here!" logout="Log me out"/>
+```
+
+#### Display different content to logged in users
 ```jsx
 <LoggedOut>
   <p>You are not logged in, and this is a members-only area!</p>
@@ -60,30 +69,8 @@ will inspire you on how to use the components listed below.
 </LoggedIn>
 ```
 
-#### Logging in and out
-You will need a copy of [popup.html](https://solid.github.io/solid-auth-client/dist/popup.html) in your application folder.
-```jsx
-<LoginButton popup="popup.html"/>
-<LogoutButton>Log me out</LogoutButton>
-// Shows LoginButton or LogoutButton depending on the user's status
-<AuthButton popup="popup.html" login="Login here!" logout="Log me out"/>
-```
-
-### 🖥️ Showing Solid data
-#### 🈯 The LDflex language
-Solid React data components
-use the [LDFlex](https://github.com/solid/query-ldflex/) language
-to build paths to the data you want.
-
-For example:
-- `"user.firstName"` will resolve to the logged in user's first name
-- `"user.friends.firstName"` will resolve to the first name of the user's friends
-- `"[https://ruben.verborgh.org/profile/#me].homepage"` will resolve to Ruben's homepage
-- `"[https://ruben.verborgh.org/profile/#me].friends.firstName"` will resolve to Ruben's friends' names
-
-Learn how to [write your own LDflex expressions](https://github.com/solid/query-ldflex/#creating-data-paths).
-
-#### Data components
+### 🖥️ Get data from Solid
+#### Load data from the user and from the Web
 ```jsx
 <LoggedIn>
   <p>Welcome back, <Value src="user.firstName"/></p>
@@ -108,9 +95,23 @@ Learn how to [write your own LDflex expressions](https://github.com/solid/query-
 
 ```
 
-### 💪🏾 Building your own components
+#### Write data expressions with LDflex
+Solid React data components
+use the [LDFlex](https://github.com/solid/query-ldflex/) language
+to build paths to the data you want.
+
+For example:
+- `"user.firstName"` will resolve to the logged in user's first name
+- `"user.friends.firstName"` will resolve to the first name of the user's friends
+- `"[https://ruben.verborgh.org/profile/#me].homepage"` will resolve to Ruben's homepage
+- `"[https://ruben.verborgh.org/profile/#me].friends.firstName"` will resolve to Ruben's friends' names
+
+Learn how to [write your own LDflex expressions](https://github.com/solid/query-ldflex/#creating-data-paths).
+
+
+## 💪🏾 Create your own components
 The Solid React library makes it easy
-to build your own components
+to create your own components
 to interact with the current user
 and to fetch Linked Data from the Web.
 To this end,
@@ -132,7 +133,7 @@ by the mechanisms listed below.
 import { withWebId, evaluateExpressions, evaluateList } from '@solid/react';
 ```
 
-#### Components that access the user's WebID
+#### Identify the user
 In Solid, people are identified by a WebID,
 which is a URL that points to them
 and leads to their data.
@@ -152,7 +153,7 @@ const MyComponent = withWebId(props =>
 <MyComponent/>
 ```
 
-#### Components that use LDflex expressions
+#### Load data from the user or the Web
 To use data from LDflex expressions,
 wrap your component definition with `evaluateExpressions`.
 The first argument is an array of properties
