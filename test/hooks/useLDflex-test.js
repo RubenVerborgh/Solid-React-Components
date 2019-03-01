@@ -1,4 +1,5 @@
 import { useLDflex } from '../../src/';
+import { toString } from '../../src/hooks/useLDflex';
 import { act, renderHook, cleanup } from 'react-hooks-testing-library';
 import ExpressionEvaluator from '../../src/ExpressionEvaluator';
 import auth from 'solid-auth-client';
@@ -52,5 +53,15 @@ describe('useLDflex', () => {
     evaluator.evaluate.mockClear();
     auth.mockWebId('https://example.org/profile#me');
     expect(evaluator.evaluate).toHaveBeenCalledTimes(0);
+  });
+});
+
+describe('toString', () => {
+  it('converts objects to strings', () => {
+    expect(toString({ toString: () => 'foo' })).toBe('foo');
+  });
+
+  it('converts arrays to an array of strings', () => {
+    expect(toString([1, 2])).toEqual(['1', '2']);
   });
 });

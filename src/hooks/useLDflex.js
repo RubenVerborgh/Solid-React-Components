@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useDebugValue } from 'react';
 import useWebId from './useWebId';
 import ExpressionEvaluator from '../ExpressionEvaluator';
 
@@ -14,6 +14,7 @@ export default function useLDflex(expression, listMode = false) {
   // Expression values might differ based on the user's WebID
   const webId = useWebId();
   let [{ result, pending, error }, update] = useState(listMode ? list : value);
+  useDebugValue(error || result, toString);
 
   // Set up the expression evaluator
   useEffect(() => {
@@ -26,4 +27,8 @@ export default function useLDflex(expression, listMode = false) {
 
   // Return the state components
   return [result, pending, error];
+}
+
+export function toString(object) {
+  return Array.isArray(object) ? object.map(toString) : `${object}`;
 }
