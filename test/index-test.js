@@ -6,6 +6,8 @@ describe('The SolidReactComponents module', () => {
     'useLoggedIn',
     'useLoggedOut',
     'useLDflex',
+    'useLDflexValue',
+    'useLDflexList',
 
     'withWebId',
     'evaluateExpressions',

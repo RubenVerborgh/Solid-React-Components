@@ -3,6 +3,8 @@ import useLoggedIn from './hooks/useLoggedIn';
 import useLoggedOut from './hooks/useLoggedOut';
 
 import useLDflex from './hooks/useLDflex';
+import useLDflexValue from './hooks/useLDflexValue';
+import useLDflexList from './hooks/useLDflexList';
 
 import withWebId from './components/withWebId';
 import evaluateExpressions from './components/evaluateExpressions';
@@ -30,6 +32,8 @@ export {
   useLoggedIn,
   useLoggedOut,
   useLDflex,
+  useLDflexValue,
+  useLDflexList,
 
   withWebId,
   evaluateExpressions,
