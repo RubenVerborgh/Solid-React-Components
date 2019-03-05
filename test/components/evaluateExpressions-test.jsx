@@ -322,8 +322,8 @@ describe('An evaluateExpressions wrapper', () => {
         expect(wrapped()).toHaveAttribute('data-foo', 'first');
       });
 
-      it('passes the second property as undefined', () => {
-        expect(wrapped()).toHaveAttribute('data-bar', 'undefined');
+      it('passes the old second property value', () => {
+        expect(wrapped()).toHaveAttribute('data-bar', 'second');
       });
 
       it('sets pending to true', () => {

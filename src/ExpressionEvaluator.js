@@ -20,19 +20,16 @@ export default class ExpressionEvaluator {
 
   /** Evaluates the given singular value and list expressions. */
   async evaluate(values, lists, updateCallback) {
+    // Reset the pending status and clear any errors
+    updateCallback({ pending: true, error: undefined });
+
     // Create evaluators for each expression, and mark them as pending
-    const reset = { error: undefined, pending: true };
     const evaluators = evaluatorQueue.schedule([
-      ...Object.entries(values).map(([key, expr]) => {
-        reset[key] = undefined;
-        return () => this.evaluateAsValue(key, expr, updateCallback);
-      }),
-      ...Object.entries(lists).map(([key, expr]) => {
-        reset[key] = [];
-        return () => this.evaluateAsList(key, expr, updateCallback);
-      }),
+      ...Object.entries(values).map(([key, expr]) =>
+        () => this.evaluateAsValue(key, expr, updateCallback)),
+      ...Object.entries(lists).map(([key, expr]) =>
+        () => this.evaluateAsList(key, expr, updateCallback)),
     ], this);
-    updateCallback(reset);
 
     // Wait until all evaluators are done (or one of them errors)
     try {
