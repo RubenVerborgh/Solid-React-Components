@@ -5,6 +5,7 @@ import useLoggedOut from './hooks/useLoggedOut';
 import useLDflex from './hooks/useLDflex';
 import useLDflexValue from './hooks/useLDflexValue';
 import useLDflexList from './hooks/useLDflexList';
+import useLatestUpdate from './hooks/useLatestUpdate';
 
 import withWebId from './components/withWebId';
 import evaluateExpressions from './components/evaluateExpressions';
@@ -34,6 +35,7 @@ export {
   useLDflex,
   useLDflexValue,
   useLDflexList,
+  useLatestUpdate,
 
   withWebId,
   evaluateExpressions,
