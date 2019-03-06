@@ -1,5 +1,6 @@
 import { useState, useEffect, useDebugValue } from 'react';
 import useWebId from './useWebId';
+import useLiveUpdate from './useLiveUpdate';
 import ExpressionEvaluator from '../ExpressionEvaluator';
 
 const value = { result: undefined, pending: true, error: undefined };
@@ -11,9 +12,12 @@ const none = {};
  * Returns an array of [result, pending, error].
  */
 export default function useLDflex(expression, listMode = false) {
-  // Expression values might differ based on the user's WebID
+  // The user's WebID and recent updates might influence the evaluation
   const webId = useWebId();
-  let [{ result, pending, error }, update] = useState(listMode ? list : value);
+  const latestUpdate = useLiveUpdate();
+
+  // Obtain the latest expression result from the state
+  const [{ result, pending, error }, update] = useState(listMode ? list : value);
   useDebugValue(error || result, toString);
 
   // Set up the expression evaluator
@@ -23,7 +27,7 @@ export default function useLDflex(expression, listMode = false) {
     evaluator.evaluate(!listMode ? query : none, listMode ? query : none,
       changed => update(current => ({ ...current, ...changed })));
     return () => evaluator.destroy();
-  }, [expression, webId && typeof expression === 'string']);
+  }, [expression, latestUpdate, webId && typeof expression === 'string']);
 
   // Return the state components
   return [result, pending, error];

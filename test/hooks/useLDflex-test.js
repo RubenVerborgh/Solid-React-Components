@@ -1,4 +1,5 @@
 import { useLDflex } from '../../src/';
+import { useLiveUpdate } from '../../src/';
 import { toString } from '../../src/hooks/useLDflex';
 import { act, renderHook, cleanup } from 'react-hooks-testing-library';
 import ExpressionEvaluator from '../../src/ExpressionEvaluator';
@@ -7,6 +8,8 @@ import auth from 'solid-auth-client';
 const evaluator = ExpressionEvaluator.prototype;
 evaluator.evaluate = jest.fn();
 jest.spyOn(evaluator, 'destroy');
+
+jest.mock('../../src/hooks/useLiveUpdate', () => require('../__mocks__/useLatestUpdate'));
 
 describe('useLDflex', () => {
   beforeEach(jest.clearAllMocks);
@@ -54,6 +57,13 @@ describe('useLDflex', () => {
     evaluator.evaluate.mockClear();
     auth.mockWebId('https://example.org/profile#me');
     expect(evaluator.evaluate).toHaveBeenCalledTimes(0);
+  });
+
+  it('re-evaluates when the UpdateContext changes', () => {
+    renderHook(() => useLDflex('foo', true));
+    evaluator.evaluate.mockClear();
+    useLiveUpdate.set({ other: true });
+    expect(evaluator.evaluate).toHaveBeenCalledTimes(1);
   });
 });
 

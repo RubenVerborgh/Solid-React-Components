@@ -5,6 +5,7 @@ import useLDflex from './hooks/useLDflex';
 import useLDflexValue from './hooks/useLDflexValue';
 import useLDflexList from './hooks/useLDflexList';
 import useLatestUpdate from './hooks/useLatestUpdate';
+import useLiveUpdate from './hooks/useLiveUpdate';
 
 import withWebId from './components/withWebId';
 import evaluateExpressions from './components/evaluateExpressions';
@@ -35,6 +36,7 @@ export {
   useLDflexValue,
   useLDflexList,
   useLatestUpdate,
+  useLiveUpdate,
 
   withWebId,
   evaluateExpressions,
