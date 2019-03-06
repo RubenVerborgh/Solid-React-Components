@@ -7,6 +7,7 @@ evaluator.evaluate = jest.fn();
 jest.spyOn(evaluator, 'destroy');
 
 describe('useLDflexValue', () => {
+  beforeEach(jest.clearAllMocks);
   afterEach(cleanup);
 
   it('destroys the evaluator after unmounting', () => {
