@@ -24,6 +24,9 @@ describe('The SolidReactComponents module', () => {
     'Label',
     'Name',
     'List',
+    'LiveUpdate',
+
+    'UpdateContext',
   ];
 
   exports.forEach(name => {
