@@ -1,4 +1,7 @@
 {
+  env: {
+    node: true,
+  },
   extends: plugin:jest/recommended,
   rules: {
     callback-return: off,
