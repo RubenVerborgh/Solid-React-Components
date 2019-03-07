@@ -17,6 +17,7 @@ describe('An UpdateTracker', () => {
       'http://a.com/docs/1',
       'http://a.com/docs/2',
       'http://b.com/docs/3',
+      'http://b.com/docs/3#thing',
     ];
     let webSockets;
     beforeAll(() => {
@@ -127,7 +128,10 @@ describe('An UpdateTracker', () => {
     describe('after unsubscribing from a resource', () => {
       beforeAll(() => {
         callback.mockClear();
-        updateTracker.unsubscribe('http://a.com/docs/1', 'http://a.com/other');
+        updateTracker.unsubscribe(
+          'http://a.com/docs/1#235',
+          'http://a.com/other',
+        );
       });
 
       it('does not call the callback when the resource changes', () => {

@@ -15,8 +15,9 @@ export default class UpdateTracker {
 
   /** Subscribes to changes in the given resources */
   subscribe(...urls) {
-    for (const url of urls) {
+    for (let url of urls) {
       // Create a new subscription if none exists for the resource
+      url = url.replace(/#.*/, '');
       if (!(url in subscribers)) {
         const webSocket = this.getWebSocketFor(url);
         webSocket.enqueue(`sub ${url}`);
@@ -29,7 +30,8 @@ export default class UpdateTracker {
 
   /** Unsubscribes to changes in the given resources */
   unsubscribe(...urls) {
-    for (const url of urls) {
+    for (let url of urls) {
+      url = url.replace(/#.*/, '');
       if (url in subscribers)
         subscribers[url].delete(this.subscriber);
     }
