@@ -49,11 +49,11 @@ describe('a LiveUpdate component', () => {
     });
   });
 
-  describe('subscribing to two resources', () => {
+  describe('subscribing to two resources with an array', () => {
     beforeAll(() => {
       useLatestUpdate.mockClear();
       ({ container } = render(
-        <LiveUpdate subscribe="https://a.com/1  https://b.com/2">
+        <LiveUpdate subscribe={['https://a.com/1', 'https://b.com/2']}>
           <ShowContext/>
         </LiveUpdate>
       ));
@@ -71,6 +71,22 @@ describe('a LiveUpdate component', () => {
     it('changes the UpdateContext value when an update arrives', () => {
       useLatestUpdate.set({ update: true });
       expect(container.innerHTML).toBe('{"update":true}');
+    });
+  });
+
+  describe('subscribing to two resources with a string', () => {
+    beforeAll(() => {
+      useLatestUpdate.mockClear();
+      ({ container } = render(
+        <LiveUpdate subscribe=" https://a.com/1  https://b.com/2  ">
+          <ShowContext/>
+        </LiveUpdate>
+      ));
+    });
+
+    it('calls useLatestUpdate with the given resources', () => {
+      expect(useLatestUpdate).toHaveBeenCalledTimes(1);
+      expect(useLatestUpdate).toHaveBeenCalledWith('https://a.com/1', 'https://b.com/2');
     });
   });
 });
