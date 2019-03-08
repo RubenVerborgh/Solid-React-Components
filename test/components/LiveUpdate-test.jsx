@@ -4,7 +4,7 @@ import { UpdateContext } from '../../src/';
 import useLatestUpdate from '../../src/hooks/useLatestUpdate';
 import { render, cleanup } from 'react-testing-library';
 
-jest.mock('../../src/hooks/useLatestUpdate', () => require('../__mocks__/useLatestUpdate'));
+jest.mock('../../src/hooks/useLatestUpdate', () => require('../__mocks__/useState'));
 
 function ShowContext() {
   const context = useContext(UpdateContext);

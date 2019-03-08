@@ -9,7 +9,7 @@ const evaluator = ExpressionEvaluator.prototype;
 evaluator.evaluate = jest.fn();
 jest.spyOn(evaluator, 'destroy');
 
-jest.mock('../../src/hooks/useLiveUpdate', () => require('../__mocks__/useLatestUpdate'));
+jest.mock('../../src/hooks/useLiveUpdate', () => require('../__mocks__/useState'));
 
 describe('useLDflex', () => {
   beforeEach(jest.clearAllMocks);
