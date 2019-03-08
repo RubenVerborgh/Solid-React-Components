@@ -7,6 +7,8 @@ class SolidAuthClient extends EventEmitter {
     this.session = undefined;
   }
 
+  fetch() {}
+
   popupLogin() {}
 
   logout() {}
@@ -26,6 +28,7 @@ class SolidAuthClient extends EventEmitter {
 }
 
 const instance = new SolidAuthClient();
+jest.spyOn(instance, 'fetch');
 jest.spyOn(instance, 'popupLogin');
 jest.spyOn(instance, 'logout');
 jest.spyOn(instance, 'removeListener');

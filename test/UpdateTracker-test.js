@@ -1,5 +1,6 @@
 import UpdateTracker from '../src/UpdateTracker';
-import data from '@solid/query-ldflex';
+import auth from 'solid-auth-client';
+import ldflex from '@solid/query-ldflex';
 
 const WebSocket = global.WebSocket = jest.fn(() => ({
   send: jest.fn(),
@@ -7,7 +8,7 @@ const WebSocket = global.WebSocket = jest.fn(() => ({
 
 describe('An UpdateTracker', () => {
   const callback = jest.fn();
-  let updateTracker;
+  let updateTracker, webSockets;
   beforeAll(() => {
     updateTracker = new UpdateTracker(callback);
   });
@@ -19,7 +20,6 @@ describe('An UpdateTracker', () => {
       'http://b.com/docs/3',
       'http://b.com/docs/3#thing',
     ];
-    let webSockets;
     beforeAll(() => {
       WebSocket.mockClear();
       updateTracker.subscribe(...resources);
@@ -73,7 +73,7 @@ describe('An UpdateTracker', () => {
     describe('after an untracked resource changes', () => {
       beforeAll(() => {
         callback.mockClear();
-        data.clearCache.mockClear();
+        ldflex.clearCache.mockClear();
         webSockets[0].onmessage({ data: 'pub http://a.com/other' });
       });
 
@@ -82,15 +82,15 @@ describe('An UpdateTracker', () => {
       });
 
       it('clears the LDflex cache', () => {
-        expect(data.clearCache).toHaveBeenCalledTimes(1);
-        expect(data.clearCache).toHaveBeenCalledWith('http://a.com/other');
+        expect(ldflex.clearCache).toHaveBeenCalledTimes(1);
+        expect(ldflex.clearCache).toHaveBeenCalledWith('http://a.com/other');
       });
     });
 
     describe('after a tracked resource changes', () => {
       beforeAll(() => {
         callback.mockClear();
-        data.clearCache.mockClear();
+        ldflex.clearCache.mockClear();
         webSockets[0].onmessage({ data: 'pub http://a.com/docs/1' });
       });
 
@@ -104,15 +104,15 @@ describe('An UpdateTracker', () => {
       });
 
       it('clears the LDflex cache', () => {
-        expect(data.clearCache).toHaveBeenCalledTimes(1);
-        expect(data.clearCache).toHaveBeenCalledWith('http://a.com/docs/1');
+        expect(ldflex.clearCache).toHaveBeenCalledTimes(1);
+        expect(ldflex.clearCache).toHaveBeenCalledWith('http://a.com/docs/1');
       });
     });
 
     describe('after an unknown message arrives for a tracked resource ', () => {
       beforeAll(() => {
         callback.mockClear();
-        data.clearCache.mockClear();
+        ldflex.clearCache.mockClear();
         webSockets[0].onmessage({ data: 'ack http://a.com/docs/1' });
       });
 
@@ -121,7 +121,7 @@ describe('An UpdateTracker', () => {
       });
 
       it('does not clear the LDflex cache', () => {
-        expect(data.clearCache).toHaveBeenCalledTimes(0);
+        expect(ldflex.clearCache).toHaveBeenCalledTimes(0);
       });
     });
 
@@ -137,6 +137,69 @@ describe('An UpdateTracker', () => {
       it('does not call the callback when the resource changes', () => {
         webSockets[0].onmessage({ data: 'pub http://a.com/docs/1' });
         expect(callback).toHaveBeenCalledTimes(0);
+      });
+    });
+  });
+
+  describe('subscribing to *', () => {
+    describe('before subscribing', () => {
+      beforeAll(() => {
+        WebSocket.mockClear();
+        auth.emit('request', 'http://x.com/1');
+        auth.emit('request', 'http://x.com/1');
+        auth.emit('request', 'http://x.com/2');
+        auth.emit('request', 'https://y.com/3');
+      });
+
+      it('does not subscribe to fetched resources', () => {
+        expect(WebSocket).toHaveBeenCalledTimes(0);
+      });
+    });
+
+    describe('after subscribing', () => {
+      beforeAll(() => {
+        updateTracker.subscribe('*');
+        webSockets = WebSocket.mock.results.map(s => s.value);
+        webSockets.forEach(s => s.onopen());
+      });
+
+      it('subscribes to all previously fetched resources', () => {
+        expect(WebSocket).toHaveBeenCalledTimes(2);
+        expect(WebSocket).toHaveBeenCalledWith('ws://x.com/');
+        expect(WebSocket).toHaveBeenCalledWith('wss://y.com/');
+
+        expect(webSockets[0].send).toHaveBeenCalledTimes(2);
+        expect(webSockets[0].send).toHaveBeenCalledWith('sub http://x.com/1');
+        expect(webSockets[0].send).toHaveBeenCalledWith('sub http://x.com/2');
+        expect(webSockets[1].send).toHaveBeenCalledTimes(1);
+        expect(webSockets[1].send).toHaveBeenCalledWith('sub https://y.com/3');
+      });
+
+      it('notifies the subscriber when any resource changes', () => {
+        callback.mockClear();
+        webSockets[0].onmessage({ data: 'pub http://whatever.com/9' });
+        expect(callback).toHaveBeenCalledTimes(1);
+        webSockets[1].onmessage({ data: 'pub https://other.com/3' });
+        expect(callback).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    describe('when new resources are fetched', () => {
+      beforeAll(() => {
+        WebSocket.mockClear();
+        auth.emit('request', 'https://z.com/1');
+        auth.emit('request', 'https://z.com/2');
+        webSockets = WebSocket.mock.results.map(s => s.value);
+        webSockets.forEach(s => s.onopen());
+      });
+
+      it('subscribes to the new resources', () => {
+        expect(WebSocket).toHaveBeenCalledTimes(1);
+        expect(WebSocket).toHaveBeenCalledWith('wss://z.com/');
+
+        expect(webSockets[0].send).toHaveBeenCalledTimes(2);
+        expect(webSockets[0].send).toHaveBeenCalledWith('sub https://z.com/1');
+        expect(webSockets[0].send).toHaveBeenCalledWith('sub https://z.com/2');
       });
     });
   });

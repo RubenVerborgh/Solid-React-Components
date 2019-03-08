@@ -21,7 +21,7 @@
     "@solid/query-ldflex": "^2.4.0",
     "prop-types": "^15.6.2",
     "react": "^16.8.4",
-    "solid-auth-client": "^2.2.14"
+    "solid-auth-client": "^2.3.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",

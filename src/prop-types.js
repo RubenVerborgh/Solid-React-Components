@@ -50,3 +50,6 @@ setPropTypes(List, {
   offset: numberString,
   filter: func,
 });
+
+import LiveUpdate from './components/LiveUpdate';
+setPropTypes(LiveUpdate, { subscribe: oneOfType([array, string]) });

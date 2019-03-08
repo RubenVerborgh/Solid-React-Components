@@ -24,7 +24,7 @@ describe('a LiveUpdate component', () => {
     });
   });
 
-  describe('without subscriptions', () => {
+  describe('without a subscribe attribute', () => {
     beforeAll(() => {
       useLatestUpdate.mockClear();
       ({ container } = render(
@@ -34,9 +34,9 @@ describe('a LiveUpdate component', () => {
       ));
     });
 
-    it('calls useLatestUpdate without parameters', () => {
+    it('calls useLatestUpdate with the * parameter', () => {
       expect(useLatestUpdate).toHaveBeenCalledTimes(1);
-      expect(useLatestUpdate).toHaveBeenCalledWith();
+      expect(useLatestUpdate).toHaveBeenCalledWith('*');
     });
 
     it('initially sets the UpdateContext value to the empty object', () => {
@@ -49,7 +49,7 @@ describe('a LiveUpdate component', () => {
     });
   });
 
-  describe('subscribing to two resources with an array', () => {
+  describe('with an array as subscribe attribute', () => {
     beforeAll(() => {
       useLatestUpdate.mockClear();
       ({ container } = render(
@@ -74,7 +74,23 @@ describe('a LiveUpdate component', () => {
     });
   });
 
-  describe('subscribing to two resources with a string', () => {
+  describe('with an empty string as subscribe attribute', () => {
+    beforeAll(() => {
+      useLatestUpdate.mockClear();
+      ({ container } = render(
+        <LiveUpdate subscribe=" ">
+          <ShowContext/>
+        </LiveUpdate>
+      ));
+    });
+
+    it('calls useLatestUpdate without parameters', () => {
+      expect(useLatestUpdate).toHaveBeenCalledTimes(1);
+      expect(useLatestUpdate).toHaveBeenCalledWith();
+    });
+  });
+
+  describe('with a non-empty string as subscribe attribute', () => {
     beforeAll(() => {
       useLatestUpdate.mockClear();
       ({ container } = render(
