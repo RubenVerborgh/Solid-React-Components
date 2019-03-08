@@ -104,6 +104,16 @@ For example:
 
 Learn how to [create your own LDflex expressions](https://github.com/solid/query-ldflex/#creating-data-paths).
 
+#### Automatically refresh when data is updated
+Different Solid apps can write to the same documents at the same time.
+If you put components inside of `<LiveUpdate>`,
+they will refresh when data is updated externally.
+In the `subscribe` attribute, list the documents that should be tracked for updates;
+set it to `*` (default) if you want to listen to all documents accessed by your app.
+Use live updates sparingly,
+since change monitoring consumes additional resources,
+especially when monitoring documents on different data pods.
+
 
 ## 💪🏾 Create your own components
 The Solid React library makes it easy
@@ -187,6 +197,11 @@ function BlogPosts({ author = 'https://ruben.verborgh.org/profile/#me' }) {
          </ul>;
 }
 ```
+
+If your components should automatically refresh on updates
+when placed inside of a `<LiveUpdate>` component,
+use the `useLiveUpdate` hook (already included in all 3 `useLDflex` hooks).
+It returns the latest update as `{ timestamp, url }`.
 
 ## License
 ©2018–present [Ruben Verborgh](https://ruben.verborgh.org/),
