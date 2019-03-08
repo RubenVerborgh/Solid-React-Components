@@ -4,7 +4,6 @@ import useLoggedOut from './hooks/useLoggedOut';
 import useLDflex from './hooks/useLDflex';
 import useLDflexValue from './hooks/useLDflexValue';
 import useLDflexList from './hooks/useLDflexList';
-import useLatestUpdate from './hooks/useLatestUpdate';
 import useLiveUpdate from './hooks/useLiveUpdate';
 
 import withWebId from './components/withWebId';
@@ -35,7 +34,6 @@ export {
   useLDflex,
   useLDflexValue,
   useLDflexList,
-  useLatestUpdate,
   useLiveUpdate,
 
   withWebId,

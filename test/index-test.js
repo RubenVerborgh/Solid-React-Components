@@ -8,7 +8,6 @@ describe('The SolidReactComponents module', () => {
     'useLDflex',
     'useLDflexValue',
     'useLDflexList',
-    'useLatestUpdate',
     'useLiveUpdate',
 
     'withWebId',

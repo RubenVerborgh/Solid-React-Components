@@ -1,4 +1,4 @@
-import { useLatestUpdate } from '../../src/';
+import useLatestUpdate from '../../src/hooks/useLatestUpdate';
 import UpdateTracker from '../../src/UpdateTracker';
 import { renderHook, act, cleanup } from 'react-hooks-testing-library';
 
