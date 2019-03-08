@@ -91,7 +91,7 @@ You will need a copy of [popup.html](https://solid.github.io/solid-auth-client/d
 
 ```
 
-#### Write data expressions with LDflex
+#### Create data expressions with LDflex
 Solid React data components
 use the [LDFlex](https://github.com/solid/query-ldflex/) language
 to build paths to the data you want.
@@ -102,7 +102,7 @@ For example:
 - `"[https://ruben.verborgh.org/profile/#me].homepage"` will resolve to Ruben's homepage
 - `"[https://ruben.verborgh.org/profile/#me].friends.firstName"` will resolve to Ruben's friends' names
 
-Learn how to [write your own LDflex expressions](https://github.com/solid/query-ldflex/#creating-data-paths).
+Learn how to [create your own LDflex expressions](https://github.com/solid/query-ldflex/#creating-data-paths).
 
 
 ## 💪🏾 Create your own components
