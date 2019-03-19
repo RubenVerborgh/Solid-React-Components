@@ -147,13 +147,13 @@ describe('A LikeButton', () => {
   });
 
   describe('with an object', () => {
-    const objectUrl = 'https://example.org/#thing';
-    const findExpression = `[${objectUrl}].findActivity("${like}")`;
-    const createExpression = `[${objectUrl}].createActivity("${like}")`;
+    const object = 'https://example.org/#thing';
+    const findExpression = `["${object}"].findActivity("${like}")`;
+    const createExpression = `["${object}"].createActivity("${like}")`;
 
     beforeEach(() => {
       data.resolve.mockClear();
-      const { container } = render(<LikeButton object={`[${objectUrl}]`}/>);
+      const { container } = render(<LikeButton object={object}/>);
       button = container.firstChild;
     });
 

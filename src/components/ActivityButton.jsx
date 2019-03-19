@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import data from '@solid/query-ldflex';
+import { srcToLDflex } from '../util';
 import useLDflexValue from '../hooks/useLDflexValue';
 
 const { as } = data.context;
@@ -17,6 +18,7 @@ export default function ActivityButton({
   displayActivity = suggestActivity,
 }) {
   // Look up a possibly existing activity
+  object = srcToLDflex(object);
   const [exists, setExists] = useState(false);
   const activity = useLDflexValue(`${object}.findActivity("${activityType}")`);
   if (activity && !exists)

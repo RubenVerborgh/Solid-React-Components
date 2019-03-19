@@ -1,4 +1,16 @@
 /**
+ * A src property should be a valid LDflex expression,
+ * but it can also be specified as a URL.
+ * This function turns URLs into valid LDflex expressions,
+ * which is useful if you want to manipulate expressions directly.
+ */
+export function srcToLDflex(src) {
+  if (/^https?:[^"]+$/.test(src))
+    src = `["${src}"]`;
+  return src;
+}
+
+/**
  * Returns an object with only the given keys from the source.
  */
 export function pick(source, keys) {

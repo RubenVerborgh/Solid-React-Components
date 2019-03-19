@@ -12,7 +12,7 @@ export default function App() {
         <h1>Solid App</h1>
         <p><AuthButton popup="popup.html"/></p>
         <p>
-          <Like object="[https://github.com/solid/react-components]">
+          <Like object="https://github.com/solid/react-components">
             the Solid React components</Like>
         </p>
       </header>
@@ -30,7 +30,7 @@ export default function App() {
       <footer>
         <p>
           Solid React demo app
-          by <Label src="[https://ruben.verborgh.org/profile/#me]"/> {' '}
+          by <Label src="https://ruben.verborgh.org/profile/#me"/> {' '}
           (<Link href="[https://ruben.verborgh.org/profile/#me].homepage"/>)
         </p>
       </footer>
