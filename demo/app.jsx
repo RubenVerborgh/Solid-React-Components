@@ -2,6 +2,7 @@ import React from 'react';
 import {
   AuthButton, LoggedIn, LoggedOut,
   Value, Image, List, Link, Label,
+  Like,
 } from '../src/';
 
 export default function App() {
@@ -9,7 +10,11 @@ export default function App() {
     <div>
       <header>
         <h1>Solid App</h1>
-        <AuthButton popup="popup.html"/>
+        <p><AuthButton popup="popup.html"/></p>
+        <p>
+          <Like object="[https://github.com/solid/react-components]">
+            the Solid React components</Like>
+        </p>
       </header>
       <main>
         <LoggedIn>

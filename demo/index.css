@@ -21,6 +21,19 @@ body {
   color: red;
 }
 
+.solid.activity {
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.solid.activity:hover {
+  text-decoration: underline;
+}
+.solid.like::before {
+  content: '👍 ';
+  display: inline-block;
+}
+
 img.profile {
   float: right;
   max-width: 120px;
