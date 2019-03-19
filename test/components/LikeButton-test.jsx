@@ -20,6 +20,7 @@ describe('A LikeButton', () => {
   describe('without attributes', () => {
     const findExpression = `[${currentUrl}].findActivity("${like}")`;
     const createExpression = `[${currentUrl}].createActivity("${like}")`;
+    const deleteExpression = `[${currentUrl}].deleteActivity("${like}")`;
 
     beforeEach(() => {
       data.resolve.mockClear();
@@ -82,7 +83,14 @@ describe('A LikeButton', () => {
 
         describe('when activity creation succeeds', () => {
           beforeEach(() => {
+            // mute `act` warning caused by asynchronous `reject`,
+            // since no workaround currently exists
+            // https://github.com/facebook/jest/issues/7151
+            console.mute();
             activity.resolve({});
+          });
+          afterEach(() => {
+            console.unmute();
           });
 
           it('has "You liked this page" as a label', () => {
@@ -96,9 +104,6 @@ describe('A LikeButton', () => {
 
         describe('when activity creation fails', () => {
           beforeEach(() => {
-            // mute `act` warning caused by asynchronous `reject`,
-            // since no workaround currently exists
-            // https://github.com/facebook/jest/issues/7151
             console.mute();
             activity.reject(new Error());
           });
@@ -131,16 +136,59 @@ describe('A LikeButton', () => {
       });
 
       describe('when clicked', () => {
+        let activity;
         beforeEach(() => {
+          activity = new MockPromise();
+          data.resolve.mockReturnValue(activity);
           fireEvent.click(button);
         });
 
-        it('has "You liked this page" as a label', () => {
-          expect(button).toHaveProperty('innerHTML', 'You liked this page');
+        it('has "Like this page" as a label', () => {
+          expect(button).toHaveProperty('innerHTML', 'Like this page');
         });
 
-        it('has the "performed" class', () => {
-          expect(button).toHaveClass('performed');
+        it('does not have the "performed" class', () => {
+          expect(button).not.toHaveClass('performed');
+        });
+
+        it('creates an activity', () => {
+          expect(data.resolve).toHaveBeenCalledWith(deleteExpression);
+        });
+
+        describe('when activity creation succeeds', () => {
+          beforeEach(() => {
+            console.mute();
+            activity.resolve({});
+          });
+          afterEach(() => {
+            console.unmute();
+          });
+
+          it('has "Like this page" as a label', () => {
+            expect(button).toHaveProperty('innerHTML', 'Like this page');
+          });
+
+          it('does not have the "performed" class', () => {
+            expect(button).not.toHaveClass('performed');
+          });
+        });
+
+        describe('when activity creation fails', () => {
+          beforeEach(() => {
+            console.mute();
+            activity.reject(new Error());
+          });
+          afterEach(() => {
+            console.unmute();
+          });
+
+          it('has "You liked this page" as a label', () => {
+            expect(button).toHaveProperty('innerHTML', 'You liked this page');
+          });
+
+          it('has the "performed" class', () => {
+            expect(button).toHaveClass('performed');
+          });
         });
       });
     });

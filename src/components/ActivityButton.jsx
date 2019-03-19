@@ -19,29 +19,33 @@ export default function ActivityButton({
 }) {
   // Look up a possibly existing activity
   object = srcToLDflex(object);
-  const [exists, setExists] = useState(false);
+  const [exists, setExists] = useState();
   const activity = useLDflexValue(`${object}.findActivity("${activityType}")`);
-  if (activity && !exists)
+  if (exists === undefined && activity)
     setExists(true);
 
   // Creates a new activity (if none already exists)
-  async function createActivity() {
-    if (!exists) {
-      setExists(true);
-      try {
-        await data.resolve(`${object}.createActivity("${activityType}")`);
-      }
-      catch (error) {
-        setExists(false);
-        console.warn('@solid/react-components', error);
-      }
+  async function toggleActivity() {
+    // Optimistically display the result
+    setExists(!exists);
+    try {
+      // Try performing the action
+      const action = !exists ? 'create' : 'delete';
+      await data.resolve(`${object}.${action}Activity("${activityType}")`);
+      // Confirm the result (in case a concurrent action was pending)
+      setExists(!exists);
+    }
+    catch (error) {
+      // Revert to the previous state
+      setExists(exists);
+      console.warn('@solid/react-components', error);
     }
   }
 
   // Return the activity button
   className = `${className} ${exists ? 'performed' : ''}`;
   return (
-    <button className={className} onClick={createActivity}>
+    <button className={className} onClick={toggleActivity}>
       { exists ? displayActivity : suggestActivity }
     </button>
   );
