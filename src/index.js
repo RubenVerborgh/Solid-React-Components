@@ -23,6 +23,7 @@ import Name from './components/Name';
 import List from './components/List';
 import LiveUpdate from './components/LiveUpdate';
 import ActivityButton from './components/ActivityButton';
+import LikeButton from './components/LikeButton';
 
 import UpdateContext from './UpdateContext';
 
@@ -54,6 +55,8 @@ export {
   List,
   LiveUpdate,
   ActivityButton,
+  LikeButton,
+  LikeButton as Like,
 
   UpdateContext,
 };

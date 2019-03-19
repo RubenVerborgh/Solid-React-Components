@@ -26,6 +26,8 @@ describe('The SolidReactComponents module', () => {
     'List',
     'LiveUpdate',
     'ActivityButton',
+    'LikeButton',
+    'Like',
 
     'UpdateContext',
   ];
