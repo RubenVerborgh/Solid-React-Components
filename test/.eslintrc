@@ -8,6 +8,7 @@
     global-require: off,
     func-style: off,
     new-cap: off,
+    no-console: [ error, { allow: [ mute, unmute ] } ],
     no-empty-function: off,
   },
 }

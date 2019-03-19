@@ -1,18 +1,36 @@
 /* eslint no-console: off */
 import 'jest-dom/extend-expect';
 
-const warn = console.warn;
-console.warn = (...args) => {
-  // Ignore warnings we generate ourselves
-  if (args[0] === '@solid/react-components')
-    return;
-  warn(...args);
-};
+// Hide warnings and errors we trigger on purpose
+const { warn, error } = console;
+let muted = false;
+Object.assign(console, {
+  warn(...args) {
+    // Ignore warnings we generate ourselves
+    if (muted || args[0] === '@solid/react-components')
+      return;
+    warn(...args);
+  },
 
-const error = console.error;
-console.error = (...args) => {
-  // Ignore invalid prop-types that we test on purpose
-  if (/Failed prop type/.test(args[0]))
-    return;
-  error(...args);
-};
+  error(...args) {
+    // Ignore invalid prop-types that we test on purpose
+    if (muted || /Failed prop type/.test(args[0]))
+      return;
+    error(...args);
+  },
+
+  mute() {
+    muted = true;
+  },
+
+  unmute() {
+    muted = false;
+  },
+});
+
+// Mock the window.location property
+Object.defineProperty(window, 'location', {
+  value: {
+    href: 'http://localhost/',
+  },
+});

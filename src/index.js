@@ -22,6 +22,7 @@ import Label from './components/Label';
 import Name from './components/Name';
 import List from './components/List';
 import LiveUpdate from './components/LiveUpdate';
+import ActivityButton from './components/ActivityButton';
 
 import UpdateContext from './UpdateContext';
 
@@ -52,6 +53,7 @@ export {
   Name,
   List,
   LiveUpdate,
+  ActivityButton,
 
   UpdateContext,
 };
