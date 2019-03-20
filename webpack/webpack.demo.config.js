@@ -2,7 +2,7 @@
   Exports the demo application.
 */
 
-const applyCommonSettings = require('./webpack.common.config');
+const extendConfig = require('./webpack.common.config');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin');
@@ -19,7 +19,8 @@ const externalAssets = [
   '@solid/query-ldflex/dist/solid-query-ldflex.bundle.js.map',
 ];
 
-module.exports = applyCommonSettings('./dist/demo/', ({ outputDir }) => ({
+module.exports = extendConfig('./dist/demo/', (outputDir, common) => ({
+  ...common,
   entry: {
     demo: './demo/index.jsx',
   },

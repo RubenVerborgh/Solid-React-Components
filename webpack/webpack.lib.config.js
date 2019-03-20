@@ -4,9 +4,10 @@
   - global.solid.data to be @solid/query-ldflex
 */
 
-const applyCommonSettings = require('./webpack.common.config');
+const extendConfig = require('./webpack.common.config');
 
-module.exports = applyCommonSettings('./dist', ({ outputDir }) => ({
+module.exports = extendConfig('./dist', (outputDir, common) => ({
+  ...common,
   output: {
     path: outputDir,
     filename: '[name].js',

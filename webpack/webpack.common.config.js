@@ -1,8 +1,7 @@
 const { resolve } = require('path');
 
-module.exports = function applyCommonSettings(outputDir, createOverrides) {
-  const overrides = createOverrides({ outputDir: resolve(outputDir) });
-  return Object.assign({}, {
+module.exports = function extendConfig(outputDir, customize) {
+  return customize(resolve(outputDir), {
     mode: 'none',
     context: resolve(__dirname, '..'),
     entry: {
@@ -25,5 +24,5 @@ module.exports = function applyCommonSettings(outputDir, createOverrides) {
       '@solid/query-ldflex': ['solid', 'data'],
     },
     devtool: 'source-map',
-  }, overrides);
+  });
 };
