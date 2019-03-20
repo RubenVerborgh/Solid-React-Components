@@ -18,7 +18,7 @@
   ],
   "dependencies": {
     "@babel/runtime": "^7.1.2",
-    "@solid/query-ldflex": "^2.4.0",
+    "@solid/query-ldflex": "^2.5.0",
     "prop-types": "^15.6.2",
     "react": "^16.8.4",
     "solid-auth-client": "^2.3.0"
