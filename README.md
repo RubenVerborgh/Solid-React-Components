@@ -65,6 +65,19 @@ You will need a copy of [popup.html](https://solid.github.io/solid-auth-client/d
 </LoggedIn>
 ```
 
+### 👍🏾 Social interactions
+With Solid, people can _like_ any page or thing on the Web:
+```jsx
+<Like/> // the current page
+<Like object="https://github.com/">GitHub</Like>
+<Like object="[https://ruben.verborgh.org/profile/#me].friends">Ruben's website</Like>
+<Dislike object="http://dbpedia.org/resource/Poverty">poverty</Dislike>
+<Follow object="https://ruben.verborgh.org/profile/#me">Ruben</Follow>
+```
+
+Your social interactions are stored in your own data pod.
+Build your own interactions with an `<ActivityButton/>`.
+
 ### 🖥️ Get data from Solid
 #### Load data from the user and from the Web
 ```jsx
