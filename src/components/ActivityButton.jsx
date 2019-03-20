@@ -12,10 +12,14 @@ const { as } = data.context;
 export default function ActivityButton({
   activityType = `${as}Like`,
   object = `[${window.location.href}]`,
+  children,
   shortName = /\w*$/.exec(activityType)[0],
   className = `solid activity ${shortName.toLowerCase()}`,
-  suggestActivity = shortName,
-  displayActivity = suggestActivity,
+  activateText = shortName,
+  deactivateText = activateText,
+  activateLabel = children ? [activateText, ' ', children] : activateText,
+  deactivateLabel = children ? [deactivateText, ' ', children] : deactivateText,
+  ...props
 }) {
   // Look up a possibly existing activity
   object = srcToLDflex(object);
@@ -45,8 +49,22 @@ export default function ActivityButton({
   // Return the activity button
   className = `${className} ${exists ? 'performed' : ''}`;
   return (
-    <button className={className} onClick={toggleActivity}>
-      { exists ? displayActivity : suggestActivity }
+    <button className={className} onClick={toggleActivity} {...props}>
+      { exists ? deactivateLabel : activateLabel }
     </button>
   );
+}
+
+// Internal helper for creating custom activity buttons
+export function customActivityButton(type, activate, deactivate, deactivateNoChildren) {
+  const activityType = `${as}${type}`;
+  return ({
+    object,
+    children = object ? null : 'this page',
+    activateText = activate,
+    deactivateText = children ? deactivate : deactivateNoChildren,
+    ...props
+  }) =>
+    <ActivityButton {...props}
+      {...{ activityType, object, children, activateText, deactivateText }} />;
 }

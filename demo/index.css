@@ -29,9 +29,14 @@ body {
 .solid.activity:hover {
   text-decoration: underline;
 }
+.solid.activity::before {
+  display: inline-block;
+}
 .solid.like::before {
   content: '👍 ';
-  display: inline-block;
+}
+.solid.dislike::before {
+  content: '👎 ';
 }
 
 img.profile {

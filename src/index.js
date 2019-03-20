@@ -24,6 +24,8 @@ import List from './components/List';
 import LiveUpdate from './components/LiveUpdate';
 import ActivityButton from './components/ActivityButton';
 import LikeButton from './components/LikeButton';
+import DislikeButton from './components/DislikeButton';
+import FollowButton from './components/FollowButton';
 
 import UpdateContext from './UpdateContext';
 
@@ -57,6 +59,10 @@ export {
   ActivityButton,
   LikeButton,
   LikeButton as Like,
+  DislikeButton,
+  DislikeButton as Dislike,
+  FollowButton,
+  FollowButton as Follow,
 
   UpdateContext,
 };

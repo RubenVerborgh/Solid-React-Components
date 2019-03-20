@@ -28,6 +28,10 @@ describe('The SolidReactComponents module', () => {
     'ActivityButton',
     'LikeButton',
     'Like',
+    'DislikeButton',
+    'Dislike',
+    'FollowButton',
+    'Follow',
 
     'UpdateContext',
   ];
