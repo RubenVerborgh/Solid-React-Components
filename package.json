@@ -20,8 +20,10 @@
     "@babel/runtime": "^7.1.2",
     "@solid/query-ldflex": "^2.5.0",
     "prop-types": "^15.6.2",
-    "react": "^16.8.4",
     "solid-auth-client": "^2.3.0"
+  },
+  "peerDependencies": {
+    "react": "^16.8.4"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",
@@ -43,6 +45,7 @@
     "jest": "^24.3.0",
     "jest-dom": "^3.1.2",
     "jest-mock-promise": "^1.0.23",
+    "react": "^16.8.4",
     "react-dom": "^16.8.4",
     "react-hooks-testing-library": "^0.3.4",
     "react-testing-library": "^6.0.0",
