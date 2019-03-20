@@ -1,6 +1,6 @@
 {
   "name": "@solid/react",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Efficiently build Solid apps and components with React",
   "author": "Ruben Verborgh <ruben@verborgh.org> (https://ruben.verborgh.org/)",
   "license": "MIT",
