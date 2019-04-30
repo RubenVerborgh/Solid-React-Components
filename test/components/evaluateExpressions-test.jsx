@@ -38,6 +38,20 @@ describe('An evaluateExpressions wrapper', () => {
     render(<Component/>);
   });
 
+  it('accepts non-LDflex types as valueProps and listProps', async () => {
+    const Component = evaluateExpressions(['a'], ['b'], () => null);
+    render(<Component a={1234} b={[1, 2, 3, 4]} />);
+  });
+
+  it('accepts LDFlex expression which results in unthenable as valueProps and listProps', async () => {
+    data.resolve.mockReturnValue(1234);
+    const Component = evaluateExpressions(['a'], ({ a }) => <span data-a={`${a}`}/>);
+
+    const rendered = render(<Component a="[unthenable expression for value]"/>);
+    await waitForDomChange();
+    expect(rendered.container.firstChild).toHaveAttribute('data-a', '1234');
+  });
+
   it('accepts empty properties', async () => {
     const Component = evaluateExpressions(['a'], ['b'],
       ({ error }) => <span data-error={`${error}`}/>);
@@ -45,15 +59,6 @@ describe('An evaluateExpressions wrapper', () => {
     await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
 
     expect(wrapped()).toHaveAttribute('data-error', 'undefined');
-  });
-
-  it('errors on invalid expression types', async () => {
-    const Component = evaluateExpressions(['a'], ({ error }) => `${error}`);
-    ({ container } = render(<Component a={1234}/>));
-    await waitForDomChange();
-
-    expect(container).toHaveTextContent(
-      'Error: a should be an LDflex path or string but is 1234');
   });
 
   describe('before properties are resolved', () => {
