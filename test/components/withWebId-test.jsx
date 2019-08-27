@@ -1,6 +1,6 @@
 import React from 'react';
 import { withWebId } from '../../src/';
-import { render, cleanup } from 'react-testing-library';
+import { render, cleanup } from '@testing-library/react';
 import auth from 'solid-auth-client';
 
 describe('A withWebId wrapper', () => {

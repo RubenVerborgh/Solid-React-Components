@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { LiveUpdate } from '../../src/';
 import { UpdateContext } from '../../src/';
 import useLatestUpdate from '../../src/hooks/useLatestUpdate';
-import { render, cleanup } from 'react-testing-library';
+import { render, cleanup } from '@testing-library/react';
 
 jest.mock('../../src/hooks/useLatestUpdate', () => require('../__mocks__/useState'));
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { UpdateContext, useLiveUpdate } from '../../src/';
-import { render, cleanup } from 'react-testing-library';
+import { render, cleanup } from '@testing-library/react';
 
 describe('useLiveUpdate', () => {
   afterAll(cleanup);

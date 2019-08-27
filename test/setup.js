@@ -1,5 +1,5 @@
 /* eslint no-console: off */
-import 'jest-dom/extend-expect';
+import '@testing-library/jest-dom/extend-expect';
 
 // Hide warnings and errors we trigger on purpose
 const { warn, error } = console;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { evaluateList } from '../../src/';
-import { render, cleanup, waitForDomChange } from 'react-testing-library';
+import { render, cleanup, waitForDomChange } from '@testing-library/react';
 import { asyncIterable } from '../util';
 
 describe('An evaluateList wrapper', () => {

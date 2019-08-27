@@ -1,5 +1,5 @@
 import { useLDflexValue } from '../../src/';
-import { act, renderHook, cleanup } from 'react-hooks-testing-library';
+import { act, renderHook, cleanup } from '@testing-library/react-hooks';
 import ExpressionEvaluator from '../../src/ExpressionEvaluator';
 
 const evaluator = ExpressionEvaluator.prototype;

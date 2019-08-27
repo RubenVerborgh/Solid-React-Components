@@ -1,5 +1,5 @@
 import { useWebId } from '../../src/';
-import { renderHook, cleanup } from 'react-hooks-testing-library';
+import { renderHook, cleanup } from '@testing-library/react-hooks';
 import auth from 'solid-auth-client';
 
 describe('useWebId', () => {

@@ -1,7 +1,7 @@
 import { useLDflex } from '../../src/';
 import { useLiveUpdate } from '../../src/';
 import { toString } from '../../src/hooks/useLDflex';
-import { act, renderHook, cleanup } from 'react-hooks-testing-library';
+import { act, renderHook, cleanup } from '@testing-library/react-hooks';
 import ExpressionEvaluator from '../../src/ExpressionEvaluator';
 import auth from 'solid-auth-client';
 

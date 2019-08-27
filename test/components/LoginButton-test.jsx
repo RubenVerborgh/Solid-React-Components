@@ -1,6 +1,6 @@
 import React from 'react';
 import { LoginButton } from '../../src/';
-import { render, fireEvent, cleanup } from 'react-testing-library';
+import { render, fireEvent, cleanup } from '@testing-library/react';
 import auth from 'solid-auth-client';
 
 describe('A LoginButton', () => {

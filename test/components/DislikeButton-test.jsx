@@ -1,6 +1,6 @@
 import React from 'react';
 import { DislikeButton } from '../../src/';
-import { render, fireEvent, cleanup } from 'react-testing-library';
+import { render, fireEvent, cleanup } from '@testing-library/react';
 import MockPromise from 'jest-mock-promise';
 import data from '@solid/query-ldflex';
 import useLDflex from '../../src/hooks/useLDflex';

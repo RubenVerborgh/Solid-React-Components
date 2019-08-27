@@ -1,6 +1,6 @@
 import React from 'react';
 import { evaluateExpressions } from '../../src/';
-import { render, cleanup, wait, waitForDomChange } from 'react-testing-library';
+import { render, cleanup, wait, waitForDomChange } from '@testing-library/react';
 import MockPromise from 'jest-mock-promise';
 import data from '@solid/query-ldflex';
 import auth from 'solid-auth-client';

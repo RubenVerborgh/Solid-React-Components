@@ -1,6 +1,6 @@
 import useLatestUpdate from '../../src/hooks/useLatestUpdate';
 import UpdateTracker from '../../src/UpdateTracker';
-import { renderHook, act, cleanup } from 'react-hooks-testing-library';
+import { renderHook, act, cleanup } from '@testing-library/react-hooks';
 
 jest.mock('../../src/UpdateTracker', () =>
   jest.fn(() => ({

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Image } from '../../src/';
-import { render, cleanup } from 'react-testing-library';
+import { render, cleanup } from '@testing-library/react';
 import useLDflex from '../../src/hooks/useLDflex';
 
 jest.mock('../../src/hooks/useLDflex', () => require('../__mocks__/useLDflex'));

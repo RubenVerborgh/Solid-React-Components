@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { act } from 'react-testing-library';
+import { act } from '@testing-library/react';
 
 const pending = {};
 

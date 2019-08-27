@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import { act } from 'react-testing-library';
+import { act } from '@testing-library/react';
 
 class SolidAuthClient extends EventEmitter {
   constructor() {
