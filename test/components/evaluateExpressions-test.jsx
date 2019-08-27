@@ -38,6 +38,27 @@ describe('An evaluateExpressions wrapper', () => {
     render(<Component/>);
   });
 
+  it('accepts objects as valueProps and listProps', async () => {
+    const Component = evaluateExpressions(['a'], ['b'], ({ a, b }) =>
+      <span data-a={`${a}`} data-b={`${b.length}`}/>);
+
+    const rendered = render(<Component a={1234} b={[1, 2, 3, 4]} />);
+    await waitForDomChange();
+    expect(rendered.container.firstChild).toHaveAttribute('data-a', '1234');
+    expect(rendered.container.firstChild).toHaveAttribute('data-b', '4');
+  });
+
+  it('accepts an LDFlex expression resulting in a regular object as valueProps and listProps', async () => {
+    data.resolve.mockReturnValue(1234);
+    const Component = evaluateExpressions(['a'], ['b'], ({ a, b }) =>
+      <span data-a={`${a}`} data-b={`${b.length}`}/>);
+
+    const rendered = render(<Component a="[path]"/>);
+    await waitForDomChange();
+    expect(rendered.container.firstChild).toHaveAttribute('data-a', '1234');
+    expect(rendered.container.firstChild).toHaveAttribute('data-b', '0');
+  });
+
   it('accepts empty properties', async () => {
     const Component = evaluateExpressions(['a'], ['b'],
       ({ error }) => <span data-error={`${error}`}/>);
@@ -45,15 +66,6 @@ describe('An evaluateExpressions wrapper', () => {
     await expect(waitForDomChange({ timeout: 50 })).rejects.toThrow();
 
     expect(wrapped()).toHaveAttribute('data-error', 'undefined');
-  });
-
-  it('errors on invalid expression types', async () => {
-    const Component = evaluateExpressions(['a'], ({ error }) => `${error}`);
-    ({ container } = render(<Component a={1234}/>));
-    await waitForDomChange();
-
-    expect(container).toHaveTextContent(
-      'Error: a should be an LDflex path or string but is 1234');
   });
 
   describe('before properties are resolved', () => {

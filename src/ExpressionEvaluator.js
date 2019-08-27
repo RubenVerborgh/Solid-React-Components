@@ -56,8 +56,9 @@ export default class ExpressionEvaluator {
   /** Evaluates the property expression as a singular value. */
   async evaluateAsValue(key, expr, updateCallback) {
     // Obtain and await the promise
-    const promise = this.resolveExpression(key, expr, 'then');
+    const promise = this.resolveExpression(expr);
     this.pending[key] = promise;
+
     try {
       const value = await promise;
       // Stop if another evaluator took over in the meantime (component update)
@@ -76,7 +77,7 @@ export default class ExpressionEvaluator {
   /** Evaluates the property expression as a list. */
   async evaluateAsList(key, expr, updateCallback) {
     // Create the iterable
-    const iterable = this.resolveExpression(key, expr, Symbol.asyncIterator);
+    const iterable = this.resolveExpression(expr);
     if (!iterable)
       return true;
     this.pending[key] = iterable;
@@ -106,17 +107,16 @@ export default class ExpressionEvaluator {
     return true;
   }
 
-  /** Resolves the property into an LDflex path. */
-  resolveExpression(key, expr, expectedProperty) {
-    // If the property is an LDflex string expression, resolve it
+  /** Resolves the expression into an LDflex path. */
+  resolveExpression(expr) {
+    // Ignore an empty expression
     if (!expr)
       return '';
-    const resolved = typeof expr === 'string' ? data.resolve(expr) : expr;
-
-    // Ensure that the resolved value is an LDflex path
-    if (!resolved || typeof resolved[expectedProperty] !== 'function')
-      throw new Error(`${key} should be an LDflex path or string but is ${expr}`);
-
-    return resolved;
+    // Resolve an LDflex string expression
+    else if (typeof expr === 'string')
+      return data.resolve(expr);
+    // Return a resolved LDflex path (and any other object) as-is
+    else
+      return expr;
   }
 }
