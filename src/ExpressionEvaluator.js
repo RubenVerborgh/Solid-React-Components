@@ -107,13 +107,16 @@ export default class ExpressionEvaluator {
     return true;
   }
 
-  /** Resolves the property into an LDflex path. */
+  /** Resolves the expression into an LDflex path. */
   resolveExpression(expr) {
-    // If the property is an LDflex string expression, resolve it
+    // Ignore an empty expression
     if (!expr)
       return '';
-    const resolved = typeof expr === 'string' ? data.resolve(expr) : expr;
-
-    return resolved;
+    // Resolve an LDflex string expression
+    else if (typeof expr === 'string')
+      return data.resolve(expr);
+    // Return a resolved LDflex path (and any other object) as-is
+    else
+      return expr;
   }
 }

@@ -38,18 +38,25 @@ describe('An evaluateExpressions wrapper', () => {
     render(<Component/>);
   });
 
-  it('accepts non-LDflex types as valueProps and listProps', async () => {
-    const Component = evaluateExpressions(['a'], ['b'], () => null);
-    render(<Component a={1234} b={[1, 2, 3, 4]} />);
-  });
+  it('accepts objects as valueProps and listProps', async () => {
+    const Component = evaluateExpressions(['a'], ['b'], ({ a, b }) =>
+      <span data-a={`${a}`} data-b={`${b.length}`}/>);
 
-  it('accepts LDFlex expression which results in unthenable as valueProps and listProps', async () => {
-    data.resolve.mockReturnValue(1234);
-    const Component = evaluateExpressions(['a'], ({ a }) => <span data-a={`${a}`}/>);
-
-    const rendered = render(<Component a="[unthenable expression for value]"/>);
+    const rendered = render(<Component a={1234} b={[1, 2, 3, 4]} />);
     await waitForDomChange();
     expect(rendered.container.firstChild).toHaveAttribute('data-a', '1234');
+    expect(rendered.container.firstChild).toHaveAttribute('data-b', '4');
+  });
+
+  it('accepts an LDFlex expression resulting in a regular object as valueProps and listProps', async () => {
+    data.resolve.mockReturnValue(1234);
+    const Component = evaluateExpressions(['a'], ['b'], ({ a, b }) =>
+      <span data-a={`${a}`} data-b={`${b.length}`}/>);
+
+    const rendered = render(<Component a="[path]"/>);
+    await waitForDomChange();
+    expect(rendered.container.firstChild).toHaveAttribute('data-a', '1234');
+    expect(rendered.container.firstChild).toHaveAttribute('data-b', '0');
   });
 
   it('accepts empty properties', async () => {
