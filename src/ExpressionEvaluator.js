@@ -56,52 +56,52 @@ export default class ExpressionEvaluator {
   /** Evaluates the property expression as a singular value. */
   async evaluateAsValue(key, expr, updateCallback) {
     // Obtain and await the promise
-    const promise = this.resolveExpression(expr);
-    this.pending[key] = promise;
-
+    const promise = this.pending[key] = this.resolveExpression(expr);
+    let value;
     try {
-      const value = await promise;
+      value = await promise;
       // Stop if another evaluator took over in the meantime (component update)
       if (this.pending[key] !== promise)
         return false;
-      updateCallback({ [key]: value });
     }
-    // Ensure the evaluator is removed, even in case of errors
+    // Update the result and remove the evaluator, even in case of errors
     finally {
-      if (this.pending[key] === promise)
+      if (this.pending[key] === promise) {
         delete this.pending[key];
+        updateCallback({ [key]: value });
+      }
     }
     return true;
   }
 
   /** Evaluates the property expression as a list. */
   async evaluateAsList(key, expr, updateCallback) {
-    // Create the iterable
-    const iterable = this.resolveExpression(expr);
-    if (!iterable)
-      return true;
-    this.pending[key] = iterable;
-
-    // Read the iterable
+    // Read the iterable's items, throttling updates to avoid congestion
+    let empty = true;
     const items = [];
+    const iterable = this.pending[key] = this.resolveExpression(expr);
     const update = () => !this.cancel && updateCallback({ [key]: [...items] });
-    const itemQueue = createTaskQueue({ timeBetween: 100, drop: true });
+    const updateQueue = createTaskQueue({ timeBetween: 100, drop: true });
     try {
       for await (const item of iterable) {
         // Stop if another evaluator took over in the meantime (component update)
-        if (this.pending[key] !== iterable)
+        if (this.pending[key] !== iterable) {
+          updateQueue.clear();
           return false;
+        }
+        // Add the item and schedule an update
+        empty = false;
         items.push(item);
-        itemQueue.schedule(update);
+        updateQueue.schedule(update);
       }
     }
-    // Ensure pending updates are applied, and the evaluator is removed
+    // Ensure pending updates are applied immediately, and the evaluator is removed
     finally {
-      const needsUpdate = itemQueue.clear();
+      const needsUpdate = empty || updateQueue.clear();
       if (this.pending[key] === iterable) {
+        delete this.pending[key];
         if (needsUpdate)
           update();
-        delete this.pending[key];
       }
     }
     return true;
