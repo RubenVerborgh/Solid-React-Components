@@ -7,4 +7,12 @@
     ["@babel/plugin-proposal-class-properties"],
     ["@babel/plugin-transform-runtime"],
   ],
+
+  env: {
+    module: {
+      presets: [
+        ["@babel/env", { modules: false }],
+      ],
+    },
+  },
 }

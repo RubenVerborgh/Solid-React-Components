@@ -9,9 +9,12 @@
     "url": "https://github.com/solid/react-components"
   },
   "main": "lib/index.js",
+  "module": "module/index.js",
+  "sideEffects": false,
   "files": [
     "src",
     "lib",
+    "module",
     "dist",
     "!dist/demo",
     "webpack"
@@ -54,9 +57,10 @@
     "webpack-dev-server": "^3.1.14"
   },
   "scripts": {
-    "build": "npm run build:clean && npm run build:lib && npm run build:dist && npm run build:bundle && npm run build:demo",
+    "build": "npm run build:clean && npm run build:lib && npm run build:module && npm run build:dist && npm run build:bundle && npm run build:demo",
     "build:clean": "rm -rf lib dist",
     "build:lib": "babel src --out-dir lib",
+    "build:module": "BABEL_ENV=module babel src --out-dir module",
     "build:dist": "webpack -p --config=./webpack/webpack.lib.config.js",
     "build:bundle": "webpack -p --config=./webpack/webpack.bundle.config.js",
     "build:demo": "webpack --config=./webpack/webpack.demo.config.js",
