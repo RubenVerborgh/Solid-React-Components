@@ -17,6 +17,7 @@
     "module",
     "dist",
     "!dist/demo",
+    ".babelrc",
     "webpack"
   ],
   "dependencies": {
