@@ -12,7 +12,7 @@ module.exports = function extendConfig(outputDir, customize) {
         {
           test: /\.jsx?$/,
           loader: 'babel-loader',
-          exclude: /node_modules/,
+          exclude: resolve(__dirname, '../node_modules'),
         },
       ],
     },
