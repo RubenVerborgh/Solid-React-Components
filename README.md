@@ -7,6 +7,9 @@ for building your own [Solid](https://solid.inrupt.com/) components and apps.
 [![Coverage Status](https://coveralls.io/repos/github/solid/react-components/badge.svg?branch=master)](https://coveralls.io/github/solid/react-components?branch=master)
 [![Dependency Status](https://david-dm.org/solid/react-components.svg)](https://david-dm.org/solid/react-components)
 
+Follow this [live tutorial](https://trav.page/log/write-solid/)
+to get you started!
+
 ### Purpose
 ✨ [Solid](https://solid.inrupt.com/) is an ecosystem for people, data, and apps
 in which people can store their data where they want,
