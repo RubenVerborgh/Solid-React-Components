@@ -188,10 +188,14 @@ function ConnectionCount() {
   return <span>{`${name}`} is connected to {friends.length} people.</span>;
 }
 ```
-Note how we force `name` into a string through `` `${name}` ``
-(or, alternatively, `name.toString()` or `'' + name`).
-This is needed because LDflex values are special objects
-that _look_ like a string, but actually provide extra functionality.
+Note how we convert `name` into a string through `` `${name}` ``.
+Alternatively, we could also use `name.value`.
+We do this because LDflex values
+are [terms](https://rdf.js.org/data-model-spec/#term-interface)
+rather than strings,
+so they can have other properties like `language` and `termType`.
+Also, an LDflex value can be used as a path again,
+so you can keep on adding properties.
 
 Finally, the `useLDflex` hook also returns status information about the expression.
 When its optional second argument is `true`, it returns a list.
