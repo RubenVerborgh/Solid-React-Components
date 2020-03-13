@@ -41,14 +41,17 @@ export default class UpdateTracker {
   unsubscribe(...urls) {
     for (let url of urls) {
       url = url.replace(/#.*/, '');
-      if (url in subscribers)
+      if (url in subscribers) {
         subscribers[url].delete(this.subscriber);
+        delete subscribers[url];
+        delete webSockets[new URL(url).host];
+      }
     }
   }
 }
 
 /** Tracks updates to the given resource */
-function trackResource(url) {
+function trackResource(url, retryAttempt, delay) {
   // Try to find an existing socket for the host
   const { protocol, host } = new URL(url);
   let webSocket = webSockets[host];
@@ -57,10 +60,16 @@ function trackResource(url) {
   if (!webSocket) {
     const socketUrl = `${protocol.replace('http', 'ws')}//${host}/`;
     webSockets[host] = webSocket = new WebSocket(socketUrl);
+    const backOffDelay = delay || 1000;
     Object.assign(webSocket, { enqueue, onmessage,
       ready: new Promise(resolve => (webSocket.onopen = resolve)),
+      onclose: oncloseFor(host),
+      resources: [],
     });
+    setUpBackOff(webSocket, retryAttempt || 0, backOffDelay);
   }
+
+  webSocket.resources.push(url); // Storing URL of resouce that will be subscribed to
 
   // Subscribe to updates on the resource
   webSocket.enqueue(`sub ${url}`);
@@ -70,6 +79,7 @@ function trackResource(url) {
 async function enqueue(data) {
   await this.ready;
   this.send(data);
+  setUpBackOff(this, 0, 1000);
 }
 
 /** Processes an update message from the WebSocket */
@@ -89,6 +99,31 @@ function onmessage({ data }) {
     subscriber(update);
   for (const subscriber of subscribers[ALL] || [])
     subscriber(update);
+}
+
+function oncloseFor(host) {
+  return function () {
+    let ws = webSockets[host];
+    delete webSockets[host];
+    reconnectAfterBackoff(ws);
+  };
+}
+
+/** Reconnect WebSocket after a backoff delay */
+async function reconnectAfterBackoff(ws) {
+  if (ws.retry++ < 6) {
+    await ws.backoff;
+    const nextDelay = (ws.delay || 500) * 2;
+    ws.resources.forEach(url => trackResource(url, ws.retry, nextDelay));
+  }
+}
+
+function setUpBackOff(webSocket, retryAttempt, backOffDelay) {
+  Object.assign(webSocket, {
+    delay: backOffDelay,
+    backoff: new Promise(resolve => (setTimeout(resolve, backOffDelay))),
+    retry: retryAttempt,
+  });
 }
 
 // Keep track of all fetched resources

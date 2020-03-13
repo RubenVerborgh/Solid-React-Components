@@ -3,3 +3,5 @@ dist
 lib
 module
 node_modules
+.idea/
+*.iml
