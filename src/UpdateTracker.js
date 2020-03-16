@@ -65,7 +65,7 @@ function trackResource(url, retryAttempt, backOffDelay) {
     setUpBackOff(webSocket, retryAttempt, backOffDelay);
   }
 
-  // Each WebSocket keeps track of subscribed resources so we can resubscribe if needed
+  // Each WebSocket keeps track of subscribed resources so we can resubscribe later if needed
   webSocket.resources.add(url);
 
   // Subscribe to updates on the resource
