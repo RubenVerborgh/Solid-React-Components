@@ -41,11 +41,8 @@ export default class UpdateTracker {
   unsubscribe(...urls) {
     for (let url of urls) {
       url = url.replace(/#.*/, '');
-      if (url in subscribers) {
+      if (url in subscribers)
         subscribers[url].delete(this.subscriber);
-        delete subscribers[url];
-        delete webSockets[new URL(url).host];
-      }
     }
   }
 }
@@ -57,7 +54,7 @@ function trackResource(url, retryAttempt, delay) {
   let webSocket = webSockets[host];
 
   // If none exists, create a new one
-  if (!webSocket) {
+  if (!webSocket || webSocket.reopen) {
     const socketUrl = `${protocol.replace('http', 'ws')}//${host}/`;
     webSockets[host] = webSocket = new WebSocket(socketUrl);
     const backOffDelay = delay || 1000;
@@ -104,7 +101,7 @@ function onmessage({ data }) {
 function oncloseFor(host) {
   return function () {
     let ws = webSockets[host];
-    delete webSockets[host];
+    webSockets[host].reopen = true;
     reconnectAfterBackoff(ws);
   };
 }
@@ -113,7 +110,7 @@ function oncloseFor(host) {
 async function reconnectAfterBackoff(ws) {
   if (ws.retry++ < 6) {
     await ws.backoff;
-    const nextDelay = (ws.delay || 500) * 2;
+    const nextDelay = ws.delay * 2;
     ws.resources.forEach(url => trackResource(url, ws.retry, nextDelay));
   }
 }

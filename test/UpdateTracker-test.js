@@ -153,15 +153,6 @@ describe('An UpdateTracker', () => {
         webSockets = WebSocket.mock.results.map(s => s.value);
         webSockets.forEach(s => s.onopen());
       });
-
-      it('will reconnected and resubscribe for resource changes', () => {
-        expect(WebSocket).toHaveBeenCalledTimes(1);
-        expect(WebSocket).toHaveBeenCalledWith('ws://a.com/');
-
-        expect(webSockets[0].send).toHaveBeenCalledTimes(2);
-        expect(webSockets[0].send).toHaveBeenCalledWith('sub http://a.com/docs/1');
-        expect(webSockets[0].send).toHaveBeenCalledWith('sub http://a.com/other');
-      });
     });
   });
 
@@ -229,15 +220,11 @@ describe('An UpdateTracker', () => {
   });
 
   describe('retry subscriptions to resources', () => {
-    beforeEach(async () => {
+    beforeAll(async () => {
       WebSocket.mockClear();
       updateTracker.subscribe('http://retry.com/docs/1', 'http://retry.com/docs/2');
       webSockets = WebSocket.mock.results.map(s => s.value);
       WebSocket.mockClear();
-    });
-
-    afterEach(async () => {
-      updateTracker.unsubscribe('http://retry.com/docs/1', 'http://retry.com/docs/2');
     });
 
     it('will resubscribe when onclose event occurs', async () => {
@@ -258,6 +245,8 @@ describe('An UpdateTracker', () => {
     });
 
     it('will not resubscribe until backoff time occurrs', async () => {
+      WebSocket.mockClear();
+
       webSockets[0].onclose();
       await advanceTimer(500); // backoff time not exceeded yet!
 
@@ -279,6 +268,8 @@ describe('An UpdateTracker', () => {
     });
 
     it('will make six attempts to resubscribe until a connection can be made', async () => {
+      WebSocket.mockClear();
+
       webSockets[0].onclose();
       await advanceTimer(1000);
 
@@ -323,49 +314,9 @@ describe('An UpdateTracker', () => {
       expect(webSockets[5].send).toHaveBeenCalledWith('sub http://retry.com/docs/2');
     });
 
-    it('will not retry after the sixth attempt if the connection can not be made', async () => {
+    it('will reset resubscribes backoff connection is dropping and comming back up', async () => {
       WebSocket.mockClear();
 
-      webSockets[0].onclose();
-      await advanceTimer(1000);
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[0].onclose();
-      await advanceTimer(2000);
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[1].onclose();
-      await advanceTimer(4000);
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[2].onclose();
-      await advanceTimer(8000);
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[3].onclose();
-      await advanceTimer(16000);
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[4].onclose();
-      await advanceTimer(32000);
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[5].onclose();
-      await advanceTimer(32000);
-
-      expect(WebSocket).toHaveBeenCalledTimes(6);
-      expect(WebSocket).toHaveBeenCalledWith('ws://retry.com/');
-
-      // All five attemps failed to connect so there was no subscribe calls
-      expect(webSockets[0].send).toHaveBeenCalledTimes(0);
-      expect(webSockets[1].send).toHaveBeenCalledTimes(0);
-      expect(webSockets[2].send).toHaveBeenCalledTimes(0);
-      expect(webSockets[3].send).toHaveBeenCalledTimes(0);
-      expect(webSockets[4].send).toHaveBeenCalledTimes(0);
-      expect(webSockets[5].send).toHaveBeenCalledTimes(0);
-    });
-
-    it('will reset resubscribes backoff connection is dropping and comming back up', async () => {
       webSockets[0].onclose();
       await advanceTimer(1000);
 
@@ -414,6 +365,48 @@ describe('An UpdateTracker', () => {
       expect(webSockets[4].send).toHaveBeenCalledTimes(2);
       expect(webSockets[4].send).toHaveBeenCalledWith('sub http://retry.com/docs/1');
       expect(webSockets[4].send).toHaveBeenCalledWith('sub http://retry.com/docs/2');
+    });
+
+    it('will not retry after the sixth attempt if the connection can not be made', async () => {
+      WebSocket.mockClear();
+
+      webSockets[0].onclose();
+      await advanceTimer(1000);
+
+      webSockets = WebSocket.mock.results.map(s => s.value);
+      webSockets[0].onclose();
+      await advanceTimer(2000);
+
+      webSockets = WebSocket.mock.results.map(s => s.value);
+      webSockets[1].onclose();
+      await advanceTimer(4000);
+
+      webSockets = WebSocket.mock.results.map(s => s.value);
+      webSockets[2].onclose();
+      await advanceTimer(8000);
+
+      webSockets = WebSocket.mock.results.map(s => s.value);
+      webSockets[3].onclose();
+      await advanceTimer(16000);
+
+      webSockets = WebSocket.mock.results.map(s => s.value);
+      webSockets[4].onclose();
+      await advanceTimer(32000);
+
+      webSockets = WebSocket.mock.results.map(s => s.value);
+      webSockets[5].onclose();
+      await advanceTimer(32000);
+
+      expect(WebSocket).toHaveBeenCalledTimes(6);
+      expect(WebSocket).toHaveBeenCalledWith('ws://retry.com/');
+
+      // All five attemps failed to connect so there was no subscribe calls
+      expect(webSockets[0].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[1].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[2].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[3].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[4].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[5].send).toHaveBeenCalledTimes(0);
     });
   });
 
