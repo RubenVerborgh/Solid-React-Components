@@ -30,7 +30,7 @@ export default class UpdateTracker {
         if (url !== ALL)
           trackResource(url);
         else
-          fetchedUrls.forEach(trackResource);
+          fetchedUrls.forEach((urlValue) => trackResource(urlValue));
       }
       // Add the new subscriber
       subscribers[url].add(this.subscriber);
@@ -48,7 +48,7 @@ export default class UpdateTracker {
 }
 
 /** Tracks updates to the given resource */
-function trackResource(url, retryAttempt, delay) {
+function trackResource(url, retryAttempt, backOffDelay) {
   // Try to find an existing socket for the host
   const { protocol, host } = new URL(url);
   let webSocket = webSockets[host];
@@ -57,16 +57,16 @@ function trackResource(url, retryAttempt, delay) {
   if (!webSocket || webSocket.reopen) {
     const socketUrl = `${protocol.replace('http', 'ws')}//${host}/`;
     webSockets[host] = webSocket = new WebSocket(socketUrl);
-    const backOffDelay = delay || 1000;
     Object.assign(webSocket, { enqueue, onmessage,
       ready: new Promise(resolve => (webSocket.onopen = resolve)),
       onclose: oncloseFor(host),
-      resources: [],
+      resources: new Set(),
     });
-    setUpBackOff(webSocket, retryAttempt || 0, backOffDelay);
+    setUpBackOff(webSocket, retryAttempt, backOffDelay);
   }
 
-  webSocket.resources.push(url); // Storing URL of resouce that will be subscribed to
+  // Each WebSocket keeps track of subscribed resources so we can resubscribe if needed
+  webSocket.resources.add(url);
 
   // Subscribe to updates on the resource
   webSocket.enqueue(`sub ${url}`);
@@ -76,7 +76,7 @@ function trackResource(url, retryAttempt, delay) {
 async function enqueue(data) {
   await this.ready;
   this.send(data);
-  setUpBackOff(this, 0, 1000);
+  setUpBackOff(this);
 }
 
 /** Processes an update message from the WebSocket */
@@ -108,18 +108,17 @@ function oncloseFor(host) {
 
 /** Reconnect WebSocket after a backoff delay */
 async function reconnectAfterBackoff(ws) {
-  if (ws.retry++ < 6) {
-    await ws.backoff;
+  if (ws.retry < 6) {
+    await new Promise(resolve => (setTimeout(resolve, ws.delay)));
     const nextDelay = ws.delay * 2;
-    ws.resources.forEach(url => trackResource(url, ws.retry, nextDelay));
+    ws.resources.forEach(url => trackResource(url, ++ws.retry, nextDelay));
   }
 }
 
 function setUpBackOff(webSocket, retryAttempt, backOffDelay) {
   Object.assign(webSocket, {
-    delay: backOffDelay,
-    backoff: new Promise(resolve => (setTimeout(resolve, backOffDelay))),
-    retry: retryAttempt,
+    delay: backOffDelay || 1000,
+    retry: retryAttempt || 0,
   });
 }
 
