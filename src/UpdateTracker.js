@@ -30,7 +30,7 @@ export default class UpdateTracker {
         if (url !== ALL)
           trackResource(url);
         else
-          fetchedUrls.forEach((urlValue) => trackResource(urlValue));
+          fetchedUrls.forEach(fetchedUrl => trackResource(fetchedUrl));
       }
       // Add the new subscriber
       subscribers[url].add(this.subscriber);
@@ -48,52 +48,49 @@ export default class UpdateTracker {
 }
 
 /** Tracks updates to the given resource */
-function trackResource(url, retryAttempt, backOffDelay) {
+function trackResource(url, webSocketOptions = {}) {
   // Try to find an existing socket for the host
   const { protocol, host } = new URL(url);
   let webSocket = webSockets[host];
 
-  // If none exists, create a new one
-  if (!webSocket || webSocket.reopen) {
+  // If no socket exists, create a new one
+  if (!webSocket) {
     const socketUrl = `${protocol.replace('http', 'ws')}//${host}/`;
     webSockets[host] = webSocket = new WebSocket(socketUrl);
-    Object.assign(webSocket, { enqueue, onmessage,
-      ready: new Promise(resolve => (webSocket.onopen = resolve)),
-      onclose: oncloseFor(host),
+    Object.assign(webSocket, {
+      host,
       resources: new Set(),
-    });
-    setUpBackOff(webSocket, retryAttempt, backOffDelay);
+      reconnectionAttempts: 0,
+      reconnectionDelay: 1000,
+      enqueue,
+      onmessage: processMessage,
+      onclose: reconnect,
+      ready: new Promise(resolve => {
+        webSocket.onopen = () => {
+          webSocket.reconnectionAttempts = 0;
+          webSocket.reconnectionDelay = 1000;
+          resolve();
+        };
+      }),
+    }, webSocketOptions);
   }
 
-  // Each WebSocket keeps track of subscribed resources so we can resubscribe later if needed
+  // Each WebSocket keeps track of subscribed resources
+  // so we can resubscribe later if needed
   webSocket.resources.add(url);
 
   // Subscribe to updates on the resource
   webSocket.enqueue(`sub ${url}`);
 }
 
-/** Closes all sockets */
-export function resetWebSockets() {
-  for (const url in subscribers)
-    delete subscribers[url];
-  for (const host in webSockets) {
-    const socket = webSockets[host];
-    delete webSockets[host];
-    delete socket.onclose;
-    socket.close();
-  }
-  fetchedUrls.clear();
-}
-
 /** Enqueues data on the WebSocket */
 async function enqueue(data) {
   await this.ready;
   this.send(data);
-  setUpBackOff(this);
 }
 
 /** Processes an update message from the WebSocket */
-function onmessage({ data }) {
+function processMessage({ data }) {
   // Verify the message is an update notification
   const match = /^pub +(.+)/.exec(data);
   if (!match)
@@ -111,28 +108,34 @@ function onmessage({ data }) {
     subscriber(update);
 }
 
-function oncloseFor(host) {
-  return function () {
-    let ws = webSockets[host];
-    webSockets[host].reopen = true;
-    reconnectAfterBackoff(ws);
-  };
-}
+/** Reconnects a socket after a backoff delay */
+async function reconnect() {
+  // Ensure this socket is no longer marked as active
+  delete webSockets[this.host];
 
-/** Reconnect WebSocket after a backoff delay */
-async function reconnectAfterBackoff(ws) {
-  if (ws.retry < 6) {
-    await new Promise(resolve => (setTimeout(resolve, ws.delay)));
-    const nextDelay = ws.delay * 2;
-    ws.resources.forEach(url => trackResource(url, ++ws.retry, nextDelay));
+  // Try setting up a new socket
+  if (this.reconnectionAttempts < 6) {
+    // Wait a given backoff period before reconnecting
+    await new Promise(done => (setTimeout(done, this.reconnectionDelay)));
+    // Try reconnecting, and back off exponentially
+    this.resources.forEach(url => trackResource(url, {
+      reconnectionAttempts: this.reconnectionAttempts + 1,
+      reconnectionDelay: this.reconnectionDelay * 2,
+    }));
   }
 }
 
-function setUpBackOff(webSocket, retryAttempt, backOffDelay) {
-  Object.assign(webSocket, {
-    delay: backOffDelay || 1000,
-    retry: retryAttempt || 0,
-  });
+/** Closes all sockets */
+export function resetWebSockets() {
+  for (const url in subscribers)
+    delete subscribers[url];
+  for (const host in webSockets) {
+    const socket = webSockets[host];
+    delete webSockets[host];
+    delete socket.onclose;
+    socket.close();
+  }
+  fetchedUrls.clear();
 }
 
 // Keep track of all fetched resources
