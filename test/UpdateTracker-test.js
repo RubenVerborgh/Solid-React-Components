@@ -1,9 +1,10 @@
-import UpdateTracker from '../src/UpdateTracker';
+import UpdateTracker, { resetWebSockets } from '../src/UpdateTracker';
 import auth from 'solid-auth-client';
 import ldflex from '@solid/query-ldflex';
 
 const WebSocket = global.WebSocket = jest.fn(() => ({
   send: jest.fn(),
+  close: jest.fn(),
 }));
 
 describe('An UpdateTracker', () => {
@@ -16,6 +17,11 @@ describe('An UpdateTracker', () => {
     updateTracker = new UpdateTracker(callback);
   });
 
+  function getCreatedWebSockets() {
+    webSockets = WebSocket.mock.results.map(s => s.value);
+    return webSockets;
+  }
+
   describe('subscribing to 3 resources', () => {
     const resources = [
       'http://a.com/docs/1',
@@ -26,7 +32,7 @@ describe('An UpdateTracker', () => {
     beforeAll(() => {
       WebSocket.mockClear();
       updateTracker.subscribe(...resources);
-      webSockets = WebSocket.mock.results.map(s => s.value);
+      getCreatedWebSockets();
     });
 
     it('opens WebSockets to the servers of those resources', () => {
@@ -150,8 +156,7 @@ describe('An UpdateTracker', () => {
           'http://a.com/docs/1#235',
           'http://a.com/other',
         );
-        webSockets = WebSocket.mock.results.map(s => s.value);
-        webSockets.forEach(s => s.onopen());
+        getCreatedWebSockets().forEach(s => s.onopen());
       });
     });
   });
@@ -174,8 +179,7 @@ describe('An UpdateTracker', () => {
     describe('after subscribing', () => {
       beforeAll(() => {
         updateTracker.subscribe('*');
-        webSockets = WebSocket.mock.results.map(s => s.value);
-        webSockets.forEach(s => s.onopen());
+        getCreatedWebSockets().forEach(s => s.onopen());
       });
 
       it('subscribes to all previously fetched resources', () => {
@@ -204,8 +208,7 @@ describe('An UpdateTracker', () => {
         WebSocket.mockClear();
         auth.emit('request', 'https://z.com/1');
         auth.emit('request', 'https://z.com/2');
-        webSockets = WebSocket.mock.results.map(s => s.value);
-        webSockets.forEach(s => s.onopen());
+        getCreatedWebSockets().forEach(s => s.onopen());
       });
 
       it('subscribes to the new resources', () => {
@@ -219,140 +222,148 @@ describe('An UpdateTracker', () => {
     });
   });
 
-  describe('retry subscriptions to resources', () => {
-    beforeAll(async () => {
-      WebSocket.mockClear();
+  describe('when a socket is closed', () => {
+    // Ensure clean slate between tests
+    beforeEach(resetWebSockets);
+    beforeEach(WebSocket.mockClear);
+
+    // Subscribe to resources
+    beforeEach(() => {
       updateTracker.subscribe('http://retry.com/docs/1', 'http://retry.com/docs/2');
-      webSockets = WebSocket.mock.results.map(s => s.value);
+    });
+
+    // Simulate socket closure
+    beforeEach(() => {
+      getCreatedWebSockets()[0].onclose();
       WebSocket.mockClear();
     });
 
-    it('will resubscribe when onclose event occurs', async () => {
-      webSockets[0].onclose();
-      await advanceTimer(1000);
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[0].onopen();
-
-      await Promise.resolve(); // allow any pending jobs in the PromiseJobs queue to run
-
-      expect(WebSocket).toHaveBeenCalledTimes(1);
-      expect(WebSocket).toHaveBeenCalledWith('ws://retry.com/');
-
-      expect(webSockets[0].send).toHaveBeenCalledTimes(2);
-      expect(webSockets[0].send).toHaveBeenCalledWith('sub http://retry.com/docs/1');
-      expect(webSockets[0].send).toHaveBeenCalledWith('sub http://retry.com/docs/2');
-    });
-
-    it('will not resubscribe until backoff time occurrs', async () => {
-      WebSocket.mockClear();
-
-      webSockets[0].onclose();
-      await advanceTimer(500); // backoff time not exceeded yet!
-
+    it('resubscribes after 1s backoff time', async () => {
+      await jest.advanceTimersByTime(500); // backoff time not exceeded yet
       expect(WebSocket).toHaveBeenCalledTimes(0);
 
-      await advanceTimer(500); // backoff time has not been exceeded.
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[0].onopen();
-
-      await Promise.resolve(); // allow any pending jobs in the PromiseJobs queue to run
-
+      await jest.advanceTimersByTime(500); // backoff time exceeded
       expect(WebSocket).toHaveBeenCalledTimes(1);
       expect(WebSocket).toHaveBeenCalledWith('ws://retry.com/');
 
+      getCreatedWebSockets()[0].onopen();
+      await webSockets[0].ready;
       expect(webSockets[0].send).toHaveBeenCalledTimes(2);
       expect(webSockets[0].send).toHaveBeenCalledWith('sub http://retry.com/docs/1');
       expect(webSockets[0].send).toHaveBeenCalledWith('sub http://retry.com/docs/2');
     });
 
-    it('will make six attempts to resubscribe until a connection can be made', async () => {
-      WebSocket.mockClear();
+    it('makes six attempts to resubscribe with doubling backoff times', async () => {
+      await jest.advanceTimersByTime(1000);
+      expect(WebSocket).toHaveBeenCalledTimes(1);
 
-      webSockets[0].onclose();
-      await advanceTimer(1000);
+      getCreatedWebSockets()[0].onclose();
+      await jest.advanceTimersByTime(2000);
+      expect(WebSocket).toHaveBeenCalledTimes(2);
 
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[0].onclose();
-      await advanceTimer(2000);
+      getCreatedWebSockets()[1].onclose();
+      await jest.advanceTimersByTime(4000);
+      expect(WebSocket).toHaveBeenCalledTimes(3);
 
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[1].onclose();
-      await advanceTimer(4000);
+      getCreatedWebSockets()[2].onclose();
+      await jest.advanceTimersByTime(8000);
+      expect(WebSocket).toHaveBeenCalledTimes(4);
 
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[2].onclose();
-      await advanceTimer(8000);
+      getCreatedWebSockets()[3].onclose();
+      await jest.advanceTimersByTime(16000);
+      expect(WebSocket).toHaveBeenCalledTimes(5);
 
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[3].onclose();
-      await advanceTimer(16000);
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[4].onclose();
-      await advanceTimer(32000);
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[5].onopen();
-
-      await Promise.resolve(); // allow any pending jobs in the PromiseJobs queue to run
-
+      getCreatedWebSockets()[4].onclose();
+      await jest.advanceTimersByTime(32000);
       expect(WebSocket).toHaveBeenCalledTimes(6);
-      expect(WebSocket).toHaveBeenCalledWith('ws://retry.com/');
 
-      // First five attemps failed to connect so there was no subscribe calls
+      getCreatedWebSockets()[5].onopen();
+      await webSockets[5].ready;
+
+      // First five attempts failed to connect so there ere no subscribe calls
       expect(webSockets[0].send).toHaveBeenCalledTimes(0);
       expect(webSockets[1].send).toHaveBeenCalledTimes(0);
       expect(webSockets[2].send).toHaveBeenCalledTimes(0);
       expect(webSockets[3].send).toHaveBeenCalledTimes(0);
       expect(webSockets[4].send).toHaveBeenCalledTimes(0);
 
-      // The sixth attemps succeeded to connect so there was a subscribe calls
+      // The sixth attempts succeeded to connect so there was a subscribe call
       expect(webSockets[5].send).toHaveBeenCalledTimes(2);
       expect(webSockets[5].send).toHaveBeenCalledWith('sub http://retry.com/docs/1');
       expect(webSockets[5].send).toHaveBeenCalledWith('sub http://retry.com/docs/2');
     });
 
-    it('will reset resubscribes backoff connection is dropping and comming back up', async () => {
-      WebSocket.mockClear();
+    it('does not retry after the sixth attempt', async () => {
+      await jest.advanceTimersByTime(1000);
+      expect(WebSocket).toHaveBeenCalledTimes(1);
 
-      webSockets[0].onclose();
-      await advanceTimer(1000);
+      getCreatedWebSockets()[0].onclose();
+      await jest.advanceTimersByTime(2000);
+      expect(WebSocket).toHaveBeenCalledTimes(2);
 
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[0].onclose();
-      await advanceTimer(2000);
+      getCreatedWebSockets()[1].onclose();
+      await jest.advanceTimersByTime(4000);
+      expect(WebSocket).toHaveBeenCalledTimes(3);
 
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[1].onopen(); // Connection succeeded which should reset backoff times
-      await Promise.resolve(); // allow any pending jobs in the PromiseJobs queue to run
+      getCreatedWebSockets()[2].onclose();
+      await jest.advanceTimersByTime(8000);
+      expect(WebSocket).toHaveBeenCalledTimes(4);
+
+      getCreatedWebSockets()[3].onclose();
+      await jest.advanceTimersByTime(16000);
+      expect(WebSocket).toHaveBeenCalledTimes(5);
+
+      getCreatedWebSockets()[4].onclose();
+      await jest.advanceTimersByTime(32000);
+      expect(WebSocket).toHaveBeenCalledTimes(6);
+
+      getCreatedWebSockets()[5].onclose();
+      await jest.advanceTimersByTime(64000);
+      expect(WebSocket).toHaveBeenCalledTimes(6);
+
+      // All five attempts failed to connect so there was no subscribe calls
+      expect(webSockets[0].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[1].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[2].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[3].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[4].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[5].send).toHaveBeenCalledTimes(0);
+    });
+
+    it('resets backoff if the connection is dropping and coming back up', async () => {
+      await jest.advanceTimersByTime(1000);
+      expect(WebSocket).toHaveBeenCalledTimes(1);
+
+      getCreatedWebSockets()[0].onclose();
+      await jest.advanceTimersByTime(2000);
+      expect(WebSocket).toHaveBeenCalledTimes(2);
+
+      // Connection succeeded which should reset backoff times
+      getCreatedWebSockets()[1].onopen();
+      await webSockets[1].ready;
+      expect(WebSocket).toHaveBeenCalledTimes(2);
 
       // Backoff timeouts have been reset back to original times
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[1].onclose();
-      await advanceTimer(1000);
+      getCreatedWebSockets()[1].onclose();
+      await jest.advanceTimersByTime(1000);
+      expect(WebSocket).toHaveBeenCalledTimes(3);
 
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[2].onclose();
-      await advanceTimer(2000);
+      getCreatedWebSockets()[2].onclose();
+      await jest.advanceTimersByTime(2000);
+      expect(WebSocket).toHaveBeenCalledTimes(4);
 
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[3].onclose();
-      await advanceTimer(4000);
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[4].onopen();
-
-      await Promise.resolve(); // allow any pending jobs in the PromiseJobs queue to run
-
+      getCreatedWebSockets()[3].onclose();
+      await jest.advanceTimersByTime(4000);
       expect(WebSocket).toHaveBeenCalledTimes(5);
-      expect(WebSocket).toHaveBeenCalledWith('ws://retry.com/');
 
-      // First attempst failed to connect so there was no subscribe calls
+      getCreatedWebSockets()[4].onopen();
+      await webSockets[4].ready;
+      expect(WebSocket).toHaveBeenCalledTimes(5);
+
+      // First attempt failed to connect so there was no subscribe call
       expect(webSockets[0].send).toHaveBeenCalledTimes(0);
 
-      // Second attempt succeed to connect so there was two subscribe calls
+      // Second attempt succeed to connect so there were two subscribe calls
       expect(webSockets[1].send).toHaveBeenCalledTimes(2);
       expect(webSockets[1].send).toHaveBeenCalledWith('sub http://retry.com/docs/1');
       expect(webSockets[1].send).toHaveBeenCalledWith('sub http://retry.com/docs/2');
@@ -361,57 +372,10 @@ describe('An UpdateTracker', () => {
       expect(webSockets[2].send).toHaveBeenCalledTimes(0);
       expect(webSockets[3].send).toHaveBeenCalledTimes(0);
 
-      // The Fifth attempt succeed to connect so there was two subscribe calls
+      // The Fifth attempt succeed to connect so there were two subscribe calls
       expect(webSockets[4].send).toHaveBeenCalledTimes(2);
       expect(webSockets[4].send).toHaveBeenCalledWith('sub http://retry.com/docs/1');
       expect(webSockets[4].send).toHaveBeenCalledWith('sub http://retry.com/docs/2');
     });
-
-    it('will not retry after the sixth attempt if the connection can not be made', async () => {
-      WebSocket.mockClear();
-
-      webSockets[0].onclose();
-      await advanceTimer(1000);
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[0].onclose();
-      await advanceTimer(2000);
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[1].onclose();
-      await advanceTimer(4000);
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[2].onclose();
-      await advanceTimer(8000);
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[3].onclose();
-      await advanceTimer(16000);
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[4].onclose();
-      await advanceTimer(32000);
-
-      webSockets = WebSocket.mock.results.map(s => s.value);
-      webSockets[5].onclose();
-      await advanceTimer(32000);
-
-      expect(WebSocket).toHaveBeenCalledTimes(6);
-      expect(WebSocket).toHaveBeenCalledWith('ws://retry.com/');
-
-      // All five attemps failed to connect so there was no subscribe calls
-      expect(webSockets[0].send).toHaveBeenCalledTimes(0);
-      expect(webSockets[1].send).toHaveBeenCalledTimes(0);
-      expect(webSockets[2].send).toHaveBeenCalledTimes(0);
-      expect(webSockets[3].send).toHaveBeenCalledTimes(0);
-      expect(webSockets[4].send).toHaveBeenCalledTimes(0);
-      expect(webSockets[5].send).toHaveBeenCalledTimes(0);
-    });
   });
-
-  function advanceTimer(milliseconds) {
-    jest.advanceTimersByTime(milliseconds);
-    return Promise.resolve(); // allow any pending jobs in the PromiseJobs queue to run
-  }
 });

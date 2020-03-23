@@ -72,6 +72,19 @@ function trackResource(url, retryAttempt, backOffDelay) {
   webSocket.enqueue(`sub ${url}`);
 }
 
+/** Closes all sockets */
+export function resetWebSockets() {
+  for (const url in subscribers)
+    delete subscribers[url];
+  for (const host in webSockets) {
+    const socket = webSockets[host];
+    delete webSockets[host];
+    delete socket.onclose;
+    socket.close();
+  }
+  fetchedUrls.clear();
+}
+
 /** Enqueues data on the WebSocket */
 async function enqueue(data) {
   await this.ready;
