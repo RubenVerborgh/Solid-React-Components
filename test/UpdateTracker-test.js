@@ -1,17 +1,26 @@
-import UpdateTracker from '../src/UpdateTracker';
+import UpdateTracker, { resetWebSockets } from '../src/UpdateTracker';
 import auth from 'solid-auth-client';
 import ldflex from '@solid/query-ldflex';
 
 const WebSocket = global.WebSocket = jest.fn(() => ({
   send: jest.fn(),
+  close: jest.fn(),
 }));
 
 describe('An UpdateTracker', () => {
   const callback = jest.fn();
   let updateTracker, webSockets;
+
+  jest.useFakeTimers();
+
   beforeAll(() => {
     updateTracker = new UpdateTracker(callback);
   });
+
+  function retrieveCreatedWebSockets() {
+    webSockets = WebSocket.mock.results.map(s => s.value);
+    return webSockets;
+  }
 
   describe('subscribing to 3 resources', () => {
     const resources = [
@@ -23,7 +32,7 @@ describe('An UpdateTracker', () => {
     beforeAll(() => {
       WebSocket.mockClear();
       updateTracker.subscribe(...resources);
-      webSockets = WebSocket.mock.results.map(s => s.value);
+      retrieveCreatedWebSockets();
     });
 
     it('opens WebSockets to the servers of those resources', () => {
@@ -159,8 +168,7 @@ describe('An UpdateTracker', () => {
     describe('after subscribing', () => {
       beforeAll(() => {
         updateTracker.subscribe('*');
-        webSockets = WebSocket.mock.results.map(s => s.value);
-        webSockets.forEach(s => s.onopen());
+        retrieveCreatedWebSockets().forEach(s => s.onopen());
       });
 
       it('subscribes to all previously fetched resources', () => {
@@ -189,8 +197,7 @@ describe('An UpdateTracker', () => {
         WebSocket.mockClear();
         auth.emit('request', 'https://z.com/1');
         auth.emit('request', 'https://z.com/2');
-        webSockets = WebSocket.mock.results.map(s => s.value);
-        webSockets.forEach(s => s.onopen());
+        retrieveCreatedWebSockets().forEach(s => s.onopen());
       });
 
       it('subscribes to the new resources', () => {
@@ -201,6 +208,163 @@ describe('An UpdateTracker', () => {
         expect(webSockets[0].send).toHaveBeenCalledWith('sub https://z.com/1');
         expect(webSockets[0].send).toHaveBeenCalledWith('sub https://z.com/2');
       });
+    });
+  });
+
+  describe('when a socket is closed', () => {
+    // Ensure clean slate between tests
+    beforeEach(resetWebSockets);
+    beforeEach(WebSocket.mockClear);
+
+    // Subscribe to resources
+    beforeEach(() => {
+      updateTracker.subscribe('http://retry.com/docs/1', 'http://retry.com/docs/2');
+    });
+
+    // Simulate socket closure
+    beforeEach(() => {
+      retrieveCreatedWebSockets()[0].onclose();
+      WebSocket.mockClear();
+    });
+
+    it('resubscribes after 1s backoff time', async () => {
+      await jest.advanceTimersByTime(500); // backoff time not exceeded yet
+      expect(WebSocket).toHaveBeenCalledTimes(0);
+
+      await jest.advanceTimersByTime(500); // backoff time exceeded
+      expect(WebSocket).toHaveBeenCalledTimes(1);
+      expect(WebSocket).toHaveBeenCalledWith('ws://retry.com/');
+
+      retrieveCreatedWebSockets()[0].onopen();
+      await webSockets[0].ready;
+      expect(webSockets[0].send).toHaveBeenCalledTimes(2);
+      expect(webSockets[0].send).toHaveBeenCalledWith('sub http://retry.com/docs/1');
+      expect(webSockets[0].send).toHaveBeenCalledWith('sub http://retry.com/docs/2');
+    });
+
+    it('makes six attempts to resubscribe with doubling backoff times', async () => {
+      await jest.advanceTimersByTime(1000);
+      expect(WebSocket).toHaveBeenCalledTimes(1);
+
+      retrieveCreatedWebSockets()[0].onclose();
+      await jest.advanceTimersByTime(2000);
+      expect(WebSocket).toHaveBeenCalledTimes(2);
+
+      retrieveCreatedWebSockets()[1].onclose();
+      await jest.advanceTimersByTime(4000);
+      expect(WebSocket).toHaveBeenCalledTimes(3);
+
+      retrieveCreatedWebSockets()[2].onclose();
+      await jest.advanceTimersByTime(8000);
+      expect(WebSocket).toHaveBeenCalledTimes(4);
+
+      retrieveCreatedWebSockets()[3].onclose();
+      await jest.advanceTimersByTime(16000);
+      expect(WebSocket).toHaveBeenCalledTimes(5);
+
+      retrieveCreatedWebSockets()[4].onclose();
+      await jest.advanceTimersByTime(32000);
+      expect(WebSocket).toHaveBeenCalledTimes(6);
+
+      retrieveCreatedWebSockets()[5].onopen();
+      await webSockets[5].ready;
+
+      // First five attempts failed to connect so there ere no subscribe calls
+      expect(webSockets[0].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[1].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[2].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[3].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[4].send).toHaveBeenCalledTimes(0);
+
+      // The sixth attempts succeeded to connect so there was a subscribe call
+      expect(webSockets[5].send).toHaveBeenCalledTimes(2);
+      expect(webSockets[5].send).toHaveBeenCalledWith('sub http://retry.com/docs/1');
+      expect(webSockets[5].send).toHaveBeenCalledWith('sub http://retry.com/docs/2');
+    });
+
+    it('does not retry after the sixth attempt', async () => {
+      await jest.advanceTimersByTime(1000);
+      expect(WebSocket).toHaveBeenCalledTimes(1);
+
+      retrieveCreatedWebSockets()[0].onclose();
+      await jest.advanceTimersByTime(2000);
+      expect(WebSocket).toHaveBeenCalledTimes(2);
+
+      retrieveCreatedWebSockets()[1].onclose();
+      await jest.advanceTimersByTime(4000);
+      expect(WebSocket).toHaveBeenCalledTimes(3);
+
+      retrieveCreatedWebSockets()[2].onclose();
+      await jest.advanceTimersByTime(8000);
+      expect(WebSocket).toHaveBeenCalledTimes(4);
+
+      retrieveCreatedWebSockets()[3].onclose();
+      await jest.advanceTimersByTime(16000);
+      expect(WebSocket).toHaveBeenCalledTimes(5);
+
+      retrieveCreatedWebSockets()[4].onclose();
+      await jest.advanceTimersByTime(32000);
+      expect(WebSocket).toHaveBeenCalledTimes(6);
+
+      retrieveCreatedWebSockets()[5].onclose();
+      await jest.advanceTimersByTime(64000);
+      expect(WebSocket).toHaveBeenCalledTimes(6);
+
+      // All five attempts failed to connect so there was no subscribe calls
+      expect(webSockets[0].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[1].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[2].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[3].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[4].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[5].send).toHaveBeenCalledTimes(0);
+    });
+
+    it('resets backoff if the connection is dropping and coming back up', async () => {
+      await jest.advanceTimersByTime(1000);
+      expect(WebSocket).toHaveBeenCalledTimes(1);
+
+      retrieveCreatedWebSockets()[0].onclose();
+      await jest.advanceTimersByTime(2000);
+      expect(WebSocket).toHaveBeenCalledTimes(2);
+
+      // Connection succeeded which should reset backoff times
+      retrieveCreatedWebSockets()[1].onopen();
+      await webSockets[1].ready;
+      expect(WebSocket).toHaveBeenCalledTimes(2);
+
+      // Backoff timeouts have been reset back to original times
+      retrieveCreatedWebSockets()[1].onclose();
+      await jest.advanceTimersByTime(1000);
+      expect(WebSocket).toHaveBeenCalledTimes(3);
+
+      retrieveCreatedWebSockets()[2].onclose();
+      await jest.advanceTimersByTime(2000);
+      expect(WebSocket).toHaveBeenCalledTimes(4);
+
+      retrieveCreatedWebSockets()[3].onclose();
+      await jest.advanceTimersByTime(4000);
+      expect(WebSocket).toHaveBeenCalledTimes(5);
+
+      retrieveCreatedWebSockets()[4].onopen();
+      await webSockets[4].ready;
+      expect(WebSocket).toHaveBeenCalledTimes(5);
+
+      // First attempt failed to connect so there was no subscribe call
+      expect(webSockets[0].send).toHaveBeenCalledTimes(0);
+
+      // Second attempt succeed to connect so there were two subscribe calls
+      expect(webSockets[1].send).toHaveBeenCalledTimes(2);
+      expect(webSockets[1].send).toHaveBeenCalledWith('sub http://retry.com/docs/1');
+      expect(webSockets[1].send).toHaveBeenCalledWith('sub http://retry.com/docs/2');
+
+      // After a close event the third and forth attempts failed to connect
+      expect(webSockets[2].send).toHaveBeenCalledTimes(0);
+      expect(webSockets[3].send).toHaveBeenCalledTimes(0);
+
+      // The Fifth attempt succeed to connect so there were two subscribe calls
+      expect(webSockets[4].send).toHaveBeenCalledTimes(2);
+      expect(webSockets[4].send).toHaveBeenCalledWith('sub http://retry.com/docs/1');
+      expect(webSockets[4].send).toHaveBeenCalledWith('sub http://retry.com/docs/2');
     });
   });
 });

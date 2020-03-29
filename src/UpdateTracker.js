@@ -30,7 +30,7 @@ export default class UpdateTracker {
         if (url !== ALL)
           trackResource(url);
         else
-          fetchedUrls.forEach(trackResource);
+          fetchedUrls.forEach(fetchedUrl => trackResource(fetchedUrl));
       }
       // Add the new subscriber
       subscribers[url].add(this.subscriber);
@@ -48,19 +48,36 @@ export default class UpdateTracker {
 }
 
 /** Tracks updates to the given resource */
-function trackResource(url) {
+function trackResource(url, webSocketOptions = {}) {
   // Try to find an existing socket for the host
   const { protocol, host } = new URL(url);
   let webSocket = webSockets[host];
 
-  // If none exists, create a new one
+  // If no socket exists, create a new one
   if (!webSocket) {
     const socketUrl = `${protocol.replace('http', 'ws')}//${host}/`;
     webSockets[host] = webSocket = new WebSocket(socketUrl);
-    Object.assign(webSocket, { enqueue, onmessage,
-      ready: new Promise(resolve => (webSocket.onopen = resolve)),
-    });
+    Object.assign(webSocket, {
+      host,
+      resources: new Set(),
+      reconnectionAttempts: 0,
+      reconnectionDelay: 1000,
+      enqueue,
+      onmessage: processMessage,
+      onclose: reconnect,
+      ready: new Promise(resolve => {
+        webSocket.onopen = () => {
+          webSocket.reconnectionAttempts = 0;
+          webSocket.reconnectionDelay = 1000;
+          resolve();
+        };
+      }),
+    }, webSocketOptions);
   }
+
+  // Each WebSocket keeps track of subscribed resources
+  // so we can resubscribe later if needed
+  webSocket.resources.add(url);
 
   // Subscribe to updates on the resource
   webSocket.enqueue(`sub ${url}`);
@@ -73,7 +90,7 @@ async function enqueue(data) {
 }
 
 /** Processes an update message from the WebSocket */
-function onmessage({ data }) {
+function processMessage({ data }) {
   // Verify the message is an update notification
   const match = /^pub +(.+)/.exec(data);
   if (!match)
@@ -89,6 +106,36 @@ function onmessage({ data }) {
     subscriber(update);
   for (const subscriber of subscribers[ALL] || [])
     subscriber(update);
+}
+
+/** Reconnects a socket after a backoff delay */
+async function reconnect() {
+  // Ensure this socket is no longer marked as active
+  delete webSockets[this.host];
+
+  // Try setting up a new socket
+  if (this.reconnectionAttempts < 6) {
+    // Wait a given backoff period before reconnecting
+    await new Promise(done => (setTimeout(done, this.reconnectionDelay)));
+    // Try reconnecting, and back off exponentially
+    this.resources.forEach(url => trackResource(url, {
+      reconnectionAttempts: this.reconnectionAttempts + 1,
+      reconnectionDelay: this.reconnectionDelay * 2,
+    }));
+  }
+}
+
+/** Closes all sockets */
+export function resetWebSockets() {
+  for (const url in subscribers)
+    delete subscribers[url];
+  for (const host in webSockets) {
+    const socket = webSockets[host];
+    delete webSockets[host];
+    delete socket.onclose;
+    socket.close();
+  }
+  fetchedUrls.clear();
 }
 
 // Keep track of all fetched resources
