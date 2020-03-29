@@ -227,11 +227,16 @@ describe('An UpdateTracker', () => {
       WebSocket.mockClear();
     });
 
+    function waitSeconds(seconds) {
+      jest.advanceTimersByTime(seconds * 1000);
+      return Promise.resolve(); // for Node 10
+    }
+
     it('resubscribes after 1s backoff time', async () => {
-      await jest.advanceTimersByTime(500); // backoff time not exceeded yet
+      await waitSeconds(0.5); // backoff time not exceeded yet
       expect(WebSocket).toHaveBeenCalledTimes(0);
 
-      await jest.advanceTimersByTime(500); // backoff time exceeded
+      await waitSeconds(0.5); // backoff time exceeded
       expect(WebSocket).toHaveBeenCalledTimes(1);
       expect(WebSocket).toHaveBeenCalledWith('ws://retry.com/');
 
@@ -243,27 +248,27 @@ describe('An UpdateTracker', () => {
     });
 
     it('makes six attempts to resubscribe with doubling backoff times', async () => {
-      await jest.advanceTimersByTime(1000);
+      await waitSeconds(1);
       expect(WebSocket).toHaveBeenCalledTimes(1);
 
       retrieveCreatedWebSockets()[0].onclose();
-      await jest.advanceTimersByTime(2000);
+      await waitSeconds(2);
       expect(WebSocket).toHaveBeenCalledTimes(2);
 
       retrieveCreatedWebSockets()[1].onclose();
-      await jest.advanceTimersByTime(4000);
+      await waitSeconds(4);
       expect(WebSocket).toHaveBeenCalledTimes(3);
 
       retrieveCreatedWebSockets()[2].onclose();
-      await jest.advanceTimersByTime(8000);
+      await waitSeconds(8);
       expect(WebSocket).toHaveBeenCalledTimes(4);
 
       retrieveCreatedWebSockets()[3].onclose();
-      await jest.advanceTimersByTime(16000);
+      await waitSeconds(16);
       expect(WebSocket).toHaveBeenCalledTimes(5);
 
       retrieveCreatedWebSockets()[4].onclose();
-      await jest.advanceTimersByTime(32000);
+      await waitSeconds(32);
       expect(WebSocket).toHaveBeenCalledTimes(6);
 
       retrieveCreatedWebSockets()[5].onopen();
@@ -283,31 +288,31 @@ describe('An UpdateTracker', () => {
     });
 
     it('does not retry after the sixth attempt', async () => {
-      await jest.advanceTimersByTime(1000);
+      await waitSeconds(1);
       expect(WebSocket).toHaveBeenCalledTimes(1);
 
       retrieveCreatedWebSockets()[0].onclose();
-      await jest.advanceTimersByTime(2000);
+      await waitSeconds(2);
       expect(WebSocket).toHaveBeenCalledTimes(2);
 
       retrieveCreatedWebSockets()[1].onclose();
-      await jest.advanceTimersByTime(4000);
+      await waitSeconds(4);
       expect(WebSocket).toHaveBeenCalledTimes(3);
 
       retrieveCreatedWebSockets()[2].onclose();
-      await jest.advanceTimersByTime(8000);
+      await waitSeconds(8);
       expect(WebSocket).toHaveBeenCalledTimes(4);
 
       retrieveCreatedWebSockets()[3].onclose();
-      await jest.advanceTimersByTime(16000);
+      await waitSeconds(16);
       expect(WebSocket).toHaveBeenCalledTimes(5);
 
       retrieveCreatedWebSockets()[4].onclose();
-      await jest.advanceTimersByTime(32000);
+      await waitSeconds(32);
       expect(WebSocket).toHaveBeenCalledTimes(6);
 
       retrieveCreatedWebSockets()[5].onclose();
-      await jest.advanceTimersByTime(64000);
+      await waitSeconds(64);
       expect(WebSocket).toHaveBeenCalledTimes(6);
 
       // All five attempts failed to connect so there was no subscribe calls
@@ -320,11 +325,11 @@ describe('An UpdateTracker', () => {
     });
 
     it('resets backoff if the connection is dropping and coming back up', async () => {
-      await jest.advanceTimersByTime(1000);
+      await waitSeconds(1);
       expect(WebSocket).toHaveBeenCalledTimes(1);
 
       retrieveCreatedWebSockets()[0].onclose();
-      await jest.advanceTimersByTime(2000);
+      await waitSeconds(2);
       expect(WebSocket).toHaveBeenCalledTimes(2);
 
       // Connection succeeded which should reset backoff times
@@ -334,15 +339,15 @@ describe('An UpdateTracker', () => {
 
       // Backoff timeouts have been reset back to original times
       retrieveCreatedWebSockets()[1].onclose();
-      await jest.advanceTimersByTime(1000);
+      await waitSeconds(1);
       expect(WebSocket).toHaveBeenCalledTimes(3);
 
       retrieveCreatedWebSockets()[2].onclose();
-      await jest.advanceTimersByTime(2000);
+      await waitSeconds(2);
       expect(WebSocket).toHaveBeenCalledTimes(4);
 
       retrieveCreatedWebSockets()[3].onclose();
-      await jest.advanceTimersByTime(4000);
+      await waitSeconds(4);
       expect(WebSocket).toHaveBeenCalledTimes(5);
 
       retrieveCreatedWebSockets()[4].onopen();
