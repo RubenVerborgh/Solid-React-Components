@@ -3,7 +3,7 @@ A core set of [React](https://reactjs.org/) components and hooks
 for building your own [Solid](https://solid.inrupt.com/) components and apps.
 
 [![npm version](https://img.shields.io/npm/v/@solid/react.svg)](https://www.npmjs.com/package/@solid/react)
-[![Build Status](https://travis-ci.org/solid/react-components.svg?branch=master)](https://travis-ci.org/solid/react-components)
+[![Build Status](https://travis-ci.com/solid/react-components.svg?branch=master)](https://travis-ci.com/solid/react-components)
 [![Coverage Status](https://coveralls.io/repos/github/solid/react-components/badge.svg?branch=master)](https://coveralls.io/github/solid/react-components?branch=master)
 [![Dependency Status](https://david-dm.org/solid/react-components.svg)](https://david-dm.org/solid/react-components)
 
