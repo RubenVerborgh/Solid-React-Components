@@ -48,12 +48,21 @@ export default class UpdateTracker {
 }
 
 /** Tracks updates to the given resource */
-function trackResource(url, webSocketOptions = {}) {
-  // Try to find an existing socket for the host
+function trackResource(url) {
+  const webSocket = obtainWebSocketFor(url);
+  // Track subscribed resources to resubscribe later if needed
+  webSocket.resources.add(url);
+  // Subscribe to updates on the resource
+  webSocket.enqueue(`sub ${url}`);
+}
+
+/** Creates or reuses a WebSocket for the given URL. */
+function obtainWebSocketFor(url, webSocketOptions = {}) {
+  // Check if there is an existing WebSocket
   const { protocol, host } = new URL(url);
   let webSocket = webSockets[host];
 
-  // If no socket exists, create a new one
+  // If no WebSocket exists, create a new one
   if (!webSocket) {
     const socketUrl = `${protocol.replace('http', 'ws')}//${host}/`;
     webSockets[host] = webSocket = new WebSocket(socketUrl);
@@ -74,13 +83,7 @@ function trackResource(url, webSocketOptions = {}) {
       }),
     }, webSocketOptions);
   }
-
-  // Each WebSocket keeps track of subscribed resources
-  // so we can resubscribe later if needed
-  webSocket.resources.add(url);
-
-  // Subscribe to updates on the resource
-  webSocket.enqueue(`sub ${url}`);
+  return webSocket;
 }
 
 /** Enqueues data on the WebSocket */
@@ -118,10 +121,13 @@ async function reconnect() {
     // Wait a given backoff period before reconnecting
     await new Promise(done => (setTimeout(done, this.reconnectionDelay)));
     // Try reconnecting, and back off exponentially
-    this.resources.forEach(url => trackResource(url, {
-      reconnectionAttempts: this.reconnectionAttempts + 1,
-      reconnectionDelay: this.reconnectionDelay * 2,
-    }));
+    this.resources.forEach(url => {
+      obtainWebSocketFor(url, {
+        reconnectionAttempts: this.reconnectionAttempts + 1,
+        reconnectionDelay: this.reconnectionDelay * 2,
+      });
+      trackResource(url);
+    });
   }
 }
 
