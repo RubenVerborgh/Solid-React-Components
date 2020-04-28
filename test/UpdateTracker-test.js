@@ -29,9 +29,9 @@ describe('An UpdateTracker', () => {
       'http://b.com/docs/3',
       'http://b.com/docs/3#thing',
     ];
-    beforeAll(() => {
+    beforeAll(async () => {
       WebSocket.mockClear();
-      updateTracker.subscribe(...resources);
+      await updateTracker.subscribe(...resources);
       retrieveCreatedWebSockets();
     });
 
@@ -61,10 +61,10 @@ describe('An UpdateTracker', () => {
         'http://b.com/docs/4',
         'http://c.com/docs/5',
       ];
-      beforeAll(() => {
+      beforeAll(async () => {
         WebSocket.mockClear();
         webSockets.forEach(s => s.send.mockClear());
-        updateTracker.subscribe(...otherResources);
+        await updateTracker.subscribe(...otherResources);
       });
 
       it('only opens WebSockets to new servers', () => {
@@ -135,9 +135,9 @@ describe('An UpdateTracker', () => {
     });
 
     describe('after unsubscribing from a resource', () => {
-      beforeAll(() => {
+      beforeAll(async () => {
         callback.mockClear();
-        updateTracker.unsubscribe(
+        await updateTracker.unsubscribe(
           'http://a.com/docs/1#235',
           'http://a.com/other',
         );
@@ -166,8 +166,8 @@ describe('An UpdateTracker', () => {
     });
 
     describe('after subscribing', () => {
-      beforeAll(() => {
-        updateTracker.subscribe('*');
+      beforeAll(async () => {
+        await updateTracker.subscribe('*');
         retrieveCreatedWebSockets().forEach(s => s.onopen());
       });
 
@@ -217,12 +217,12 @@ describe('An UpdateTracker', () => {
     beforeEach(WebSocket.mockClear);
 
     // Subscribe to resources
-    beforeEach(() => {
-      updateTracker.subscribe('http://retry.com/docs/1', 'http://retry.com/docs/2');
+    beforeEach(async () => {
+      await updateTracker.subscribe('http://retry.com/docs/1', 'http://retry.com/docs/2');
     });
 
     // Simulate socket closure
-    beforeEach(() => {
+    beforeEach(async () => {
       retrieveCreatedWebSockets()[0].onclose();
       WebSocket.mockClear();
     });
@@ -240,7 +240,7 @@ describe('An UpdateTracker', () => {
       expect(WebSocket).toHaveBeenCalledTimes(1);
       expect(WebSocket).toHaveBeenCalledWith('ws://retry.com/');
 
-      retrieveCreatedWebSockets()[0].onopen();
+      await retrieveCreatedWebSockets()[0].onopen();
       await webSockets[0].ready;
       expect(webSockets[0].send).toHaveBeenCalledTimes(2);
       expect(webSockets[0].send).toHaveBeenCalledWith('sub http://retry.com/docs/1');
@@ -271,7 +271,7 @@ describe('An UpdateTracker', () => {
       await waitSeconds(32);
       expect(WebSocket).toHaveBeenCalledTimes(6);
 
-      retrieveCreatedWebSockets()[5].onopen();
+      await retrieveCreatedWebSockets()[5].onopen();
       await webSockets[5].ready;
 
       // First five attempts failed to connect so there ere no subscribe calls
@@ -350,7 +350,7 @@ describe('An UpdateTracker', () => {
       await waitSeconds(4);
       expect(WebSocket).toHaveBeenCalledTimes(5);
 
-      retrieveCreatedWebSockets()[4].onopen();
+      await retrieveCreatedWebSockets()[4].onopen();
       await webSockets[4].ready;
       expect(WebSocket).toHaveBeenCalledTimes(5);
 

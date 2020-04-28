@@ -21,16 +21,14 @@ export default class UpdateTracker {
   }
 
   /** Subscribes to changes in the given resources */
-  subscribe(...urls) {
+  async subscribe(...urls) {
     for (let url of urls) {
       // Create a new subscription to the resource if none existed
       url = url.replace(/#.*/, '');
       if (!(url in subscribers)) {
         subscribers[url] = new Set();
-        if (url !== ALL)
-          trackResource(url);
-        else
-          fetchedUrls.forEach(fetchedUrl => trackResource(fetchedUrl));
+        const tracked = url !== ALL ? [url] : [...fetchedUrls];
+        await Promise.all(tracked.map(trackResource));
       }
       // Add the new subscriber
       subscribers[url].add(this.subscriber);
@@ -38,7 +36,7 @@ export default class UpdateTracker {
   }
 
   /** Unsubscribes to changes in the given resources */
-  unsubscribe(...urls) {
+  async unsubscribe(...urls) {
     for (let url of urls) {
       url = url.replace(/#.*/, '');
       if (url in subscribers)
@@ -48,8 +46,8 @@ export default class UpdateTracker {
 }
 
 /** Tracks updates to the given resource */
-function trackResource(url) {
-  const webSocket = obtainWebSocketFor(url);
+async function trackResource(url, options) {
+  const webSocket = await obtainWebSocketFor(url, options);
   // Track subscribed resources to resubscribe later if needed
   webSocket.resources.add(url);
   // Subscribe to updates on the resource
@@ -57,7 +55,7 @@ function trackResource(url) {
 }
 
 /** Creates or reuses a WebSocket for the given URL. */
-function obtainWebSocketFor(url, webSocketOptions = {}) {
+async function obtainWebSocketFor(url, options = {}) {
   // Check if there is an existing WebSocket
   const { protocol, host } = new URL(url);
   let webSocket = webSockets[host];
@@ -81,7 +79,7 @@ function obtainWebSocketFor(url, webSocketOptions = {}) {
           resolve();
         };
       }),
-    }, webSocketOptions);
+    }, options);
   }
   return webSocket;
 }
@@ -121,13 +119,12 @@ async function reconnect() {
     // Wait a given backoff period before reconnecting
     await new Promise(done => (setTimeout(done, this.reconnectionDelay)));
     // Try reconnecting, and back off exponentially
-    this.resources.forEach(url => {
-      obtainWebSocketFor(url, {
+    await Promise.all([...this.resources].map(url =>
+      trackResource(url, {
         reconnectionAttempts: this.reconnectionAttempts + 1,
         reconnectionDelay: this.reconnectionDelay * 2,
-      });
-      trackResource(url);
-    });
+      })
+    ));
   }
 }
 
