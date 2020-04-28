@@ -62,7 +62,7 @@ async function trackResource(url, options) {
 }
 
 /** Creates a WebSocket for the given URL. */
-async function createWebSocket(resourceUrl, options = {}) {
+async function createWebSocket(resourceUrl, options) {
   const webSocketUrl = await getWebSocketUrl(resourceUrl);
   const webSocket = new WebSocket(webSocketUrl);
   return Object.assign(webSocket, {
@@ -140,10 +140,14 @@ export async function resetWebSockets() {
   for (const url in subscribers)
     delete subscribers[url];
   for (const host in webSockets) {
-    const socket = await webSockets[host];
+    let socket = webSockets[host];
     delete webSockets[host];
-    delete socket.onclose;
-    socket.close();
+    try {
+      socket = await socket;
+      delete socket.onclose;
+      socket.close();
+    }
+    catch { /**/ }
   }
   fetchedUrls.clear();
 }

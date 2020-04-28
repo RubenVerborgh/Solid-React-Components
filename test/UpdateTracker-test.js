@@ -212,6 +212,22 @@ describe('An UpdateTracker', () => {
     });
   });
 
+  describe('subscribing to a resource without a WebSocket', () => {
+    let origFetch;
+    beforeEach(() => {
+      origFetch = auth.fetch;
+      auth.fetch = async () => ({ headers: { get() {} } });
+    });
+    afterEach(() => {
+      auth.fetch = origFetch;
+    });
+
+    it('throws an error', async () => {
+      await expect(updateTracker.subscribe('http://other.com/docs/1'))
+        .rejects.toThrow(new Error('No WebSocket found for http://other.com/docs/1'));
+    });
+  });
+
   describe('when a socket is closed', () => {
     // Ensure clean slate between tests
     beforeEach(resetWebSockets);
