@@ -193,10 +193,11 @@ describe('An UpdateTracker', () => {
     });
 
     describe('when new resources are fetched', () => {
-      beforeAll(() => {
+      beforeAll(async () => {
         WebSocket.mockClear();
         auth.emit('request', 'https://z.com/1');
         auth.emit('request', 'https://z.com/2');
+        await waitForPromises();
         retrieveCreatedWebSockets().forEach(s => s.onopen());
       });
 
@@ -229,7 +230,7 @@ describe('An UpdateTracker', () => {
 
     function waitSeconds(seconds) {
       jest.advanceTimersByTime(seconds * 1000);
-      return Promise.resolve(); // for Node 10
+      return waitForPromises();
     }
 
     it('resubscribes after 1s backoff time', async () => {
@@ -240,7 +241,7 @@ describe('An UpdateTracker', () => {
       expect(WebSocket).toHaveBeenCalledTimes(1);
       expect(WebSocket).toHaveBeenCalledWith('ws://retry.com/');
 
-      await retrieveCreatedWebSockets()[0].onopen();
+      retrieveCreatedWebSockets()[0].onopen();
       await webSockets[0].ready;
       expect(webSockets[0].send).toHaveBeenCalledTimes(2);
       expect(webSockets[0].send).toHaveBeenCalledWith('sub http://retry.com/docs/1');
@@ -271,7 +272,7 @@ describe('An UpdateTracker', () => {
       await waitSeconds(32);
       expect(WebSocket).toHaveBeenCalledTimes(6);
 
-      await retrieveCreatedWebSockets()[5].onopen();
+      retrieveCreatedWebSockets()[5].onopen();
       await webSockets[5].ready;
 
       // First five attempts failed to connect so there ere no subscribe calls
@@ -350,7 +351,7 @@ describe('An UpdateTracker', () => {
       await waitSeconds(4);
       expect(WebSocket).toHaveBeenCalledTimes(5);
 
-      await retrieveCreatedWebSockets()[4].onopen();
+      retrieveCreatedWebSockets()[4].onopen();
       await webSockets[4].ready;
       expect(WebSocket).toHaveBeenCalledTimes(5);
 
@@ -373,3 +374,8 @@ describe('An UpdateTracker', () => {
     });
   });
 });
+
+async function waitForPromises(count = 10) {
+  while (count-- > 0)
+    await Promise.resolve();
+}

@@ -47,41 +47,48 @@ export default class UpdateTracker {
 
 /** Tracks updates to the given resource */
 async function trackResource(url, options) {
-  const webSocket = await obtainWebSocketFor(url, options);
+  // Obtain a WebSocket for the given host
+  const { host } = new URL(url);
+  if (!(host in webSockets)) {
+    webSockets[host] = Promise.resolve(null).then(() =>
+      createWebSocket(url, { host, ...options }));
+  }
+  const webSocket = await webSockets[host];
+
   // Track subscribed resources to resubscribe later if needed
   webSocket.resources.add(url);
   // Subscribe to updates on the resource
   webSocket.enqueue(`sub ${url}`);
 }
 
-/** Creates or reuses a WebSocket for the given URL. */
-async function obtainWebSocketFor(url, options = {}) {
-  // Check if there is an existing WebSocket
-  const { protocol, host } = new URL(url);
-  let webSocket = webSockets[host];
+/** Creates a WebSocket for the given URL. */
+async function createWebSocket(resourceUrl, options = {}) {
+  const webSocketUrl = await getWebSocketUrl(resourceUrl);
+  const webSocket = new WebSocket(webSocketUrl);
+  return Object.assign(webSocket, {
+    resources: new Set(),
+    reconnectionAttempts: 0,
+    reconnectionDelay: 1000,
+    enqueue,
+    onmessage: processMessage,
+    onclose: reconnect,
+    ready: new Promise(resolve => {
+      webSocket.onopen = () => {
+        webSocket.reconnectionAttempts = 0;
+        webSocket.reconnectionDelay = 1000;
+        resolve();
+      };
+    }),
+  }, options);
+}
 
-  // If no WebSocket exists, create a new one
-  if (!webSocket) {
-    const socketUrl = `${protocol.replace('http', 'ws')}//${host}/`;
-    webSockets[host] = webSocket = new WebSocket(socketUrl);
-    Object.assign(webSocket, {
-      host,
-      resources: new Set(),
-      reconnectionAttempts: 0,
-      reconnectionDelay: 1000,
-      enqueue,
-      onmessage: processMessage,
-      onclose: reconnect,
-      ready: new Promise(resolve => {
-        webSocket.onopen = () => {
-          webSocket.reconnectionAttempts = 0;
-          webSocket.reconnectionDelay = 1000;
-          resolve();
-        };
-      }),
-    }, options);
-  }
-  return webSocket;
+/** Retrieves the WebSocket URL for the given resource. */
+async function getWebSocketUrl(resourceUrl) {
+  const response = await auth.fetch(resourceUrl);
+  const webSocketUrl = response.headers.get('Updates-Via');
+  if (!webSocketUrl)
+    throw new Error(`No WebSocket found for ${resourceUrl}`);
+  return webSocketUrl;
 }
 
 /** Enqueues data on the WebSocket */
@@ -129,11 +136,11 @@ async function reconnect() {
 }
 
 /** Closes all sockets */
-export function resetWebSockets() {
+export async function resetWebSockets() {
   for (const url in subscribers)
     delete subscribers[url];
   for (const host in webSockets) {
-    const socket = webSockets[host];
+    const socket = await webSockets[host];
     delete webSockets[host];
     delete socket.onclose;
     socket.close();

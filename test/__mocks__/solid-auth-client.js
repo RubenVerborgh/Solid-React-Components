@@ -7,7 +7,19 @@ class SolidAuthClient extends EventEmitter {
     this.session = undefined;
   }
 
-  fetch() {}
+  async fetch(url) {
+    return {
+      headers: {
+        get(headerName) {
+          if (headerName === 'Updates-Via') {
+            const { protocol, host } = new URL(url);
+            return `${protocol.replace('http', 'ws')}//${host}/`;
+          }
+          return null;
+        },
+      },
+    };
+  }
 
   popupLogin() {}
 
