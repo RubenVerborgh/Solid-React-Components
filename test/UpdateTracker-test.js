@@ -244,11 +244,6 @@ describe('An UpdateTracker', () => {
       WebSocket.mockClear();
     });
 
-    function waitSeconds(seconds) {
-      jest.advanceTimersByTime(seconds * 1000);
-      return waitForPromises();
-    }
-
     it('resubscribes after 1s backoff time', async () => {
       await waitSeconds(0.5); // backoff time not exceeded yet
       expect(WebSocket).toHaveBeenCalledTimes(0);
@@ -391,7 +386,11 @@ describe('An UpdateTracker', () => {
   });
 });
 
-async function waitForPromises(count = 10) {
-  while (count-- > 0)
-    await Promise.resolve();
+async function waitForPromises() {
+  return new Promise(resolve => setImmediate(resolve));
+}
+
+async function waitSeconds(seconds) {
+  jest.advanceTimersByTime(seconds * 1000);
+  return waitForPromises();
 }
